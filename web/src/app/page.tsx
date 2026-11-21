@@ -96,7 +96,6 @@ export default function Home() {
           className="flex min-w-0 flex-1 items-stretch overflow-hidden rounded-[10px] border-[3px] border-black bg-night/90 shadow-[3px_3px_0_#000] transition-transform active:translate-x-px active:translate-y-px active:shadow-[2px_2px_0_#000]">
           <span className="flex w-8 shrink-0 items-center justify-center bg-sun text-black"><span className="animate-pulse"><Pin /></span></span>
           <span className="flex min-w-0 flex-1 flex-col justify-center gap-0.5 px-2 py-1 leading-none">
-            <span className="font-typewriter text-[9px] tracking-[2px] text-sun">ZONA</span>
             <span className="truncate font-display text-xl uppercase tracking-wide text-cream [text-shadow:2px_2px_0_#000]">{depto}</span>
           </span>
           {snap && <span className="flex shrink-0 items-end border-l-2 border-dashed border-line px-1.5 pb-1 font-typewriter text-[11px] text-teal">{timeMza(snap.at)}</span>}

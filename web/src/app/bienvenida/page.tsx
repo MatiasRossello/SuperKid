@@ -3,8 +3,9 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Logo } from "@/components/ui";
+import { ZoneWheel } from "@/components/ZoneWheel";
 import { freezeScenario, useDepto } from "@/components/useApp";
-import { DEPARTAMENTOS, type Departamento } from "@/lib/departamentos";
+import { type Departamento } from "@/lib/departamentos";
 
 const PUSH_NOTE = "sk-push-note";
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -136,20 +137,12 @@ export default function Bienvenida() {
         {geo === "idle" && saved === null && <p className="font-typewriter text-sm text-cream/90">Necesito saber dónde estás.</p>}
 
         {choosing && (
-          <div className="border-[3px] border-black bg-black/80 p-3">
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <h2 id="zona" className="font-display text-lg uppercase tracking-wide text-cream">Elegí tu zona</h2>
-              <button onClick={locate} className="flex min-h-9 items-center gap-1.5 border-2 border-cream/70 px-2.5 font-typewriter text-[11px] text-cream active:bg-cream/10">
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg>
-                USAR GPS
-              </button>
-            </div>
-            <div role="radiogroup" aria-labelledby="zona" className="grid max-h-[30dvh] grid-cols-3 gap-1.5 overflow-y-auto">
-              {[...DEPARTAMENTOS].sort((a, b) => a.localeCompare(b, "es")).map((d) => (
-                <button key={d} role="radio" aria-checked={depto === d} onClick={() => setLocal(d)}
-                  className={`min-h-10 border-2 px-1 font-display text-[12px] uppercase leading-tight tracking-wide ${depto === d ? "border-sun bg-sun text-black" : "border-cream/30 text-cream"}`}>{d}</button>
-              ))}
-            </div>
+          <div className="flex flex-col items-center gap-1">
+            <ZoneWheel value={depto} onChange={setLocal} />
+            <button onClick={locate} className="flex min-h-11 items-center gap-1.5 font-typewriter text-xs text-cream underline underline-offset-4">
+              <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg>
+              USAR MI UBICACIÓN (GPS)
+            </button>
           </div>
         )}
 
