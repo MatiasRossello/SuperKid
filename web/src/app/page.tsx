@@ -1,111 +1,115 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { Disclaimer, ForecastIcon, Logo, Pin, ScenarioBar, Stars, Sunset } from "@/components/ui";
+import { useEffect, useRef, useState } from "react";
+import { Logo, Pin, ScenarioBar, SpeechBubble, Wanted } from "@/components/ui";
 import { useDepto, useSnapshot } from "@/components/useApp";
-import { headline, timeMza, topReason } from "@/lib/copy";
-import { frameLocal } from "@/lib/radar";
+import { answer, moodOf, POSES, type Mood } from "@/lib/chat";
+import { headline, timeMza } from "@/lib/copy";
 
-const DAYS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+// Weather tint over the background road scene.
+const TINT: Record<Mood, string> = {
+  calma: "linear-gradient(180deg, rgba(255,160,60,.08), rgba(23,10,43,.35))",
+  lluvia: "linear-gradient(180deg, rgba(20,30,70,.72), rgba(30,60,110,.55))",
+  granizo: "linear-gradient(180deg, rgba(25,22,45,.82), rgba(60,60,85,.6))",
+  viento: "linear-gradient(180deg, rgba(120,60,20,.5), rgba(200,120,50,.35))",
+};
+const FX: Record<Mood, string> = { calma: "", lluvia: "fx-rain", granizo: "fx-hail", viento: "fx-wind" };
 
 export default function Home() {
   const [depto] = useDepto();
   const { snap, error, scenario } = useSnapshot();
-  const isReplay = scenario?.id === "replay";
   const router = useRouter();
+  const [asked, setAsked] = useState<string | null>(null); // null = hasn't asked yet
+  const [thinking, setThinking] = useState(false);
+  const [text, setText] = useState("");
+  const [turns, setTurns] = useState(0); // each question rotates the pose
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
   useEffect(() => { if (depto === null) router.replace("/bienvenida"); }, [depto, router]);
+  useEffect(() => () => clearTimeout(timer.current), []);
   if (!depto) return null;
 
   const zone = snap?.zones[depto];
-  const top = zone && topReason(zone.sources);
-  const lastFrame = snap?.frames.at(-1);
-  const stations = snap?.stations.filter((s) => s.departamento === depto) ?? [];
-  const wettest = stations.sort((a, b) => (b.precipitacion ?? 0) - (a.precipitacion ?? 0))[0];
-  const rayos = snap?.rayos.filter((r) => r.departamento === depto).length ?? 0;
-  const hot = (zone?.level ?? 0) >= 3;
+  const level = zone?.level ?? 0;
+  // A real alert is never hidden behind the greeting: from level 3 the character already reacts.
+  const alarming = level >= 3;
+  const showing = !thinking && (asked !== null || alarming || scenario?.frozen !== undefined); // a demo preset reacts right away
+  const mood: Mood = showing && zone ? moodOf(level, zone.sources) : "calma";
+  const reply = showing && snap ? answer(asked ?? "", depto, snap) : null;
+  const pose = (turns % POSES[mood]) + 1;
+
+  const ask = (q: string) => {
+    const t = q.trim() || "¿Cómo está el tiempo?";
+    setText(""); setAsked(t); setTurns((n) => n + 1); setThinking(true);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => setThinking(false), 1100);
+  };
 
   return (
-    <main className="pb-10">
+    <main className="relative flex h-dvh flex-col overflow-hidden bg-night">
       <ScenarioBar scenario={scenario} />
-      <Sunset>
-        <div className="absolute inset-x-6 top-14 flex items-center justify-between">
-          <Logo />
-          <Link href="/bienvenida" aria-label="Cambiar departamento y alertas" className="flex size-11 items-center justify-center rounded-full border-[1.5px] border-cream/50 bg-night/35">
-            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFF4E8" strokeWidth="2" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h10" /></svg>
+
+      {/* fondo: la entrada al parque, teñida según el clima */}
+      <Image src="/superkid/fondo.webp" alt="" fill priority sizes="480px" className="object-cover object-bottom" />
+      <div aria-hidden="true" className="absolute inset-0 transition-[background] duration-700" style={{ background: TINT[mood] }} />
+      {FX[mood] && <div aria-hidden="true" className={`pointer-events-none absolute inset-0 ${FX[mood]}`} />}
+
+      <header className="relative z-10 flex items-start justify-between px-4 pt-[max(env(safe-area-inset-top),14px)]">
+        <div className="flex flex-col gap-1.5">
+          <Logo size={28} />
+          <Link href="/bienvenida" aria-label={`Ubicación: ${depto}. Cambiar`} className="flex min-h-11 w-fit items-center gap-1.5 rounded-full bg-night/70 px-3 text-sm font-semibold backdrop-blur-sm">
+            <Pin />{depto}{snap && <span className="text-xs font-normal text-muted">· {timeMza(snap.at)}</span>}
           </Link>
         </div>
-        <div className="absolute left-6 top-28 flex items-center gap-2">
-          <Pin />
-          <span className="text-sm font-semibold">{depto}</span>
-          {snap && <span className="text-[13px] text-[#FFE3D0]">· {timeMza(snap.at)}</span>}
-        </div>
-      </Sunset>
+        <Wanted level={level} />
+      </header>
 
-      <section aria-live="polite" className={`relative mx-4 -mt-16 flex flex-col gap-3 rounded-[20px] border-[1.5px] bg-card p-5 ${hot ? "border-pink shadow-[0_0_0_4px_rgba(255,46,136,0.15)]" : "border-line"}`}>
-        <div className="flex items-center justify-between">
-          <span className="font-display text-[15px] tracking-[2px] text-sun">NIVEL DE ALERTA</span>
-          <Stars level={zone?.level ?? 0} />
-        </div>
-        {!zone ? (
-          <p className="text-muted">{error ? "No pudimos cargar los datos. Reintentamos en un minuto." : "Cargando datos oficiales…"}</p>
-        ) : (
-          <>
-            <h1 className="font-display text-[34px] leading-[1.05] tracking-wide">{headline(zone.level, zone.sources, depto)}</h1>
-            <p className="text-[15px] leading-snug text-lilac">{zone.summary}</p>
-            <p className="text-xs text-muted">
-              {top ? `Fuente: ${zone.sources.map((s) => `${s.fuente} ${timeMza(s.at)}`).filter((v, i, a) => a.indexOf(v) === i).join(" · ")}` : `Fuentes: radar DACC, estaciones y pronóstico DACC · ${timeMza(zone.updated_at)}`}
+      <section className="relative z-10 flex min-h-0 flex-1 flex-col px-4 pt-3">
+        <SpeechBubble>
+          {thinking ? (
+            <p className="flex h-10 items-center gap-1.5" aria-label="SuperKid está pensando">
+              {[0, 1, 2].map((i) => <span key={i} className="size-2.5 animate-bounce rounded-full bg-night" style={{ animationDelay: `${i * 120}ms` }} />)}
             </p>
-            {zone.level >= 3 && (
-              <Link href="/alerta" className="flex h-12 items-center justify-center rounded-full bg-pink font-display text-lg tracking-wider">VER QUÉ HACER</Link>
-            )}
-          </>
-        )}
+          ) : reply && zone ? (
+            <div className="flex flex-col gap-1">
+              
+              {reply.intent === "general" && <h1 className="font-display text-2xl leading-none tracking-wide text-pink">{headline(level, zone.sources, depto)}</h1>}
+              <p className="text-sm font-semibold leading-snug">{reply.text}</p>
+            </div>
+          ) : error && !snap ? (
+            <p className="text-[15px] font-semibold leading-snug">No pude traer los datos oficiales. Reintento en un minuto.</p>
+          ) : asked !== null ? (
+            <p className="text-[15px] font-semibold leading-snug">Dame un segundo, estoy trayendo los datos oficiales…</p>
+          ) : (
+            <p className="text-[15px] font-semibold leading-snug">¡Ey! Soy SuperKid. Preguntame cómo está el tiempo en <b>{depto}</b>.</p>
+          )}
+        </SpeechBubble>
+
+        <div className="relative mt-3 min-h-0 flex-1">
+          <Image key={`${mood}-${pose}`} src={`/superkid/${mood}-${pose}.webp`} alt={`SuperKid, ${mood === "calma" ? "tranquilo" : `con ${mood}`}`} fill priority sizes="480px"
+            className="animate-[fadein_.4s_ease-out] object-contain object-bottom drop-shadow-[0_8px_0_rgba(0,0,0,.35)]" />
+          <nav aria-label="Acciones" className="absolute bottom-2 right-0 flex flex-col gap-3">
+            <Link href="/mapa" aria-label="Abrir el mapa" className="flex size-14 flex-col items-center justify-center rounded-full border-2 border-teal bg-night/80 text-teal backdrop-blur-sm">
+              <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M9 4L3 6.5v13L9 17l6 3 6-2.5v-13L15 7zM9 4v13M15 7v13" /></svg>
+              <span className="font-display text-[10px] tracking-wider">MAPA</span>
+            </Link>
+          </nav>
+        </div>
       </section>
 
-      <div className="flex gap-3 px-4 pt-5">
-        <Link href="/mapa" aria-label="Abrir el mapa del radar" className="relative block size-[150px] shrink-0 overflow-hidden rounded-full border-[3px] border-teal" style={{ background: "radial-gradient(circle,#1D2F4A 0%,#121A30 70%)" }}>
-          <svg aria-hidden="true" width="150" height="150" viewBox="0 0 150 150" className="absolute inset-0">
-            <path d="M10 60 L40 40 L80 50 L120 30 L140 70 L120 120 L70 135 L30 110 Z" fill="none" stroke="#3E5A7E" strokeWidth="1.5" />
-            <circle cx="75" cy="75" r="60" fill="none" stroke="#2C4363" />
-            <circle cx="75" cy="75" r="35" fill="none" stroke="#2C4363" />
-            <circle cx="75" cy="75" r="6" fill="#FFF4E8" stroke="#170A2B" strokeWidth="2" />
-          </svg>
-          <span className="absolute inset-x-0 bottom-3.5 text-center font-display text-xs tracking-[2px] text-teal">
-            {scenario ? (isReplay ? "RADAR REPLAY" : "SIMULACIÓN") : "RADAR EN VIVO"}
-            {lastFrame && <span className="block text-[11px] text-cream">{frameLocal(lastFrame)}</span>}
-          </span>
-        </Link>
-        <div className="flex flex-1 flex-col gap-2.5">
-          <div className="flex flex-col gap-0.5 rounded-[14px] bg-card px-3.5 py-3">
-            <span className="text-xs text-muted">{wettest ? `Estación ${wettest.nombre}` : "Estaciones DACC"}</span>
-            <span className="text-lg font-bold">{wettest?.precipitacion != null ? `${wettest.precipitacion} mm` : "Sin dato"}</span>
-            <span className="text-xs text-muted">{wettest ? `precipitación · ${timeMza(wettest.read_at)}` : isReplay ? "no guardadas en el replay" : "sin estación en el depto"}</span>
-          </div>
-          <div className="flex flex-col gap-0.5 rounded-[14px] bg-card px-3.5 py-3">
-            <span className="text-xs text-muted">Rayos en {depto}</span>
-            <span className="text-lg font-bold">{isReplay ? "Sin dato" : rayos}</span>
-            <span className="text-xs text-muted">{scenario && !isReplay ? "últimos 5 min · simulados" : "últimos 5 min · GOES/GLM"}</span>
-          </div>
-        </div>
-      </div>
-
-      {!!snap?.forecast.length && (
-        <section className="flex flex-col gap-2.5 px-4 pt-5">
-          <h2 className="font-display text-[15px] tracking-[2px] text-sun">PRÓXIMOS DÍAS</h2>
-          <div className="grid grid-cols-4 gap-2">
-            {snap.forecast.slice(0, 4).map((f) => (
-              <div key={f.fecha} className="flex flex-col items-center gap-1 rounded-xl bg-card px-2 py-2.5" title={f.texto}>
-                <span className="text-xs font-semibold">{DAYS[new Date(f.fecha + "T12:00:00-03:00").getDay()]}</span>
-                <ForecastIcon name={f.imagen} storm={/tormenta|granizo/i.test(f.texto)} />
-                <span className="text-[13px]">{f.maxima}°/{f.minima}°</span>
-              </div>
-            ))}
-          </div>
-          <Disclaimer>Pronóstico DACC</Disclaimer>
-        </section>
-      )}
-      {!snap?.forecast.length && <div className="px-4 pt-5"><Disclaimer /></div>}
+      <footer className="relative z-10 flex flex-col gap-2.5 bg-gradient-to-t from-night via-night/90 to-transparent px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-4">
+        <form onSubmit={(e) => { e.preventDefault(); ask(text); }} className="flex gap-2">
+          <label htmlFor="pregunta" className="sr-only">Preguntale a SuperKid sobre el tiempo</label>
+          <input id="pregunta" value={text} onChange={(e) => setText(e.target.value)} maxLength={140} enterKeyHint="send" autoComplete="off"
+            placeholder="Preguntale a SuperKid…" className="h-12 min-w-0 flex-1 rounded-full border-[1.5px] border-line bg-card px-4 text-base text-cream placeholder:text-muted" />
+          <button type="submit" aria-label="Enviar pregunta" disabled={thinking} className="flex size-12 shrink-0 items-center justify-center rounded-full bg-pink disabled:opacity-60">
+            <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFF4E8" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12l16-8-6 16-3-7z" /></svg>
+          </button>
+        </form>
+        <p className="text-center text-[10px] text-muted">Datos oficiales DACC · No reemplaza las alertas oficiales · 911</p>
+      </footer>
     </main>
   );
 }

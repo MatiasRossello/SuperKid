@@ -1,7 +1,7 @@
 // Client-safe UI copy derived only from the zone's reasons. Never adds facts.
 import type { Reason } from "./level.ts";
 
-const isZonda = (r: Reason) => /zonda|viento/i.test(String(r.dato.evento ?? ""));
+export const isZonda = (r: Reason) => /zonda|viento/i.test(String(r.dato.evento ?? ""));
 
 export const topReason = (sources: Reason[]) => [...sources].sort((a, b) => b.level - a.level)[0] as Reason | undefined;
 
@@ -11,7 +11,7 @@ export function headline(level: number, sources: Reason[], depto: string, upper 
   const t = !r || level === 0 ? "Todo tranqui"
     : r.dato.fenomeno === "granizo" ? `Granizo en ${depto}`
     : isZonda(r) ? `Zonda en ${depto}`
-    : r.dato.alerta ? `Alerta ${r.dato.alerta} del SMN`
+    : r.dato.alerta ? `Alerta ${r.dato.alerta}`
     : r.dato.precipitacion_mm !== undefined ? `Llueve en ${depto}`
     : "Tormentas en el pronóstico";
   return upper ? t.toUpperCase() : t;

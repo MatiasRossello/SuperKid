@@ -25,17 +25,25 @@ export function useDepto(): [Departamento | null | undefined, (d: Departamento) 
 }
 
 export const startScenario = (id: ScenarioId) => {
+  write(session, "sk-scn-fix", null);
   write(session, "sk-scn", id);
   write(session, "sk-scn-t0", String(Date.now()));
 };
-export const stopScenario = () => { write(session, "sk-scn", null); write(session, "sk-scn-t0", null); };
+/** Maipú demo: freeze the simulated clock `min` minutes into the script. */
+export const freezeScenario = (min: number) => {
+  write(session, "sk-scn", "maipu");
+  write(session, "sk-scn-t0", String(Date.now()));
+  write(session, "sk-scn-fix", String(min));
+};
+export const stopScenario = () => { write(session, "sk-scn", null); write(session, "sk-scn-t0", null); write(session, "sk-scn-fix", null); };
 
-export type ActiveScenario = { id: ScenarioId; at: string };
+export type ActiveScenario = { id: ScenarioId; at: string; frozen?: number };
 
 /** Running scenario and its virtual time, else null. `?replay=1` or `?sim=maipu` start one, `=0` stops it. */
 export function useScenario(): ActiveScenario | null {
   const id = useSyncExternalStore(subscribe, () => read(session, "sk-scn"), () => null);
   const t0 = useSyncExternalStore(subscribe, () => read(session, "sk-scn-t0"), () => null);
+  const fix = useSyncExternalStore(subscribe, () => read(session, "sk-scn-fix"), () => null);
   const [now, setNow] = useState(0);
   useEffect(() => {
     const q = new URLSearchParams(location.search);
@@ -51,6 +59,8 @@ export function useScenario(): ActiveScenario | null {
     const iv = setInterval(tick, 1000);
     return () => clearInterval(iv);
   }, [t0]);
+  if (isScenario(id) && fix !== null && !isNaN(Number(fix)))
+    return { id, at: new Date(Date.parse(SCENARIOS[id].start) + Number(fix) * 60_000).toISOString(), frozen: Number(fix) };
   if (!isScenario(id) || !t0 || !now) return null;
   const { start, end } = SCENARIOS[id];
   const v = Date.parse(start) + (now - Number(t0)) * SCENARIO_SPEED;
