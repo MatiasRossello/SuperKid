@@ -61,7 +61,7 @@ export function simMaipuSnapshot(at: string): Snapshot {
   return {
     mode: "sim", at, frames: [], zones,
     forecast: [],
-    stations: [{ nombre: STATION.nombre, departamento: "Maipú", temp: step.smn ? 34 : 21, precipitacion: step.rainMm ?? 0, read_at: t }],
+    stations: [{ nombre: STATION.nombre, departamento: "Maipú", temp: step.smn ? 34 : 21, humedad: null, precipitacion: step.rainMm ?? 0, read_at: t }],
     rayos: SCATTER.slice(0, step.rayos ?? 0).map(([dy, dx]) => ({ lat: c.lat + dy, lng: c.lng + dx, departamento: "Maipú" })),
     cells: step.hail ? [{ lat: step.hail.lat, lng: step.hail.lng, prob: step.hail.prob_max, area_km2: step.hail.area_impacto_km2 }] : [],
   };

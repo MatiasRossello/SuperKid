@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Phone } from "@/components/Phone";
 import { Logo, Pin, ScenarioBar, SpeechBubble, Wanted } from "@/components/ui";
 import { useDepto, useSnapshot } from "@/components/useApp";
 import { answer, moodOf, POSES, type Mood } from "@/lib/chat";
@@ -37,6 +38,7 @@ export default function Home() {
   const [asked, setAsked] = useState<string | null>(null); // null = hasn't asked yet
   const [thinking, setThinking] = useState(false);
   const [text, setText] = useState("");
+  const [phone, setPhone] = useState(false);
   const [turns, setTurns] = useState(0); // each question rotates the pose
   const [said, setSaid] = useState<{ q: string; text: string } | null>(null); // model's answer to `asked`
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -120,6 +122,9 @@ export default function Home() {
           <Link href="/mapa" aria-label="Abrir el mapa" className="absolute bottom-1 left-0 flex w-24 items-center drop-shadow-[0_4px_0_rgba(0,0,0,.45)] active:scale-95">
             <Image src="/superkid/mapa.webp" alt="" width={96} height={98} sizes="96px" />
           </Link>
+          <button onClick={() => setPhone(true)} aria-label="Abrir el teléfono: datos del tiempo" className="absolute bottom-1 right-0 flex w-20 items-center drop-shadow-[0_4px_0_rgba(0,0,0,.45)] active:scale-95">
+            <Image src="/superkid/telefono.webp" alt="" width={80} height={80} sizes="80px" />
+          </button>
         </div>
       </section>
 
@@ -139,6 +144,7 @@ export default function Home() {
           </div>
         </form>
       </footer>
+      {phone && <Phone depto={depto} snap={snap} onClose={() => setPhone(false)} />}
     </main>
   );
 }
