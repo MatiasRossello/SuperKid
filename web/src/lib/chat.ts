@@ -54,6 +54,8 @@ export function nearestStation(depto: string, snap: Snapshot, ok: (s: Snapshot["
     .filter((s) => s.lat !== undefined && s.lng !== undefined && ok(s))
     .map((s) => ({ s, km: Math.round(km(c, [s.lat!, s.lng!])) }))
     .sort((a, b) => a.km - b.km)[0] ?? null;
+}
+
 const DAY_NAMES = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
 const mendozaDay = (iso: string) => new Date(Date.parse(iso) - 3 * 3600_000).toISOString().slice(0, 10);
 /** Next occurrence of a weekday (today included) from the snapshot's date. */
@@ -62,7 +64,6 @@ function dateForWeekday(iso: string, name: string): string {
   const base = new Date(`${mendozaDay(iso)}T00:00:00Z`);
   const delta = (target - base.getUTCDay() + 7) % 7;
   return new Date(base.getTime() + delta * 86_400_000).toISOString().slice(0, 10);
-}
 }
 
 const shorten = (s: string, max = 170) => {

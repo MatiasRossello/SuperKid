@@ -6,7 +6,7 @@ import type { Snapshot } from "./status.ts";
 export const AVISO =
   "Datos oficiales de la DACC Mendoza resumidos por SuperKid. No reemplaza las alertas oficiales. Emergencias: 911.";
 
-const MODO: Record<Snapshot["mode"], string> = { db: "en_vivo", live: "en_vivo", replay: "replay", sim: "simulacion" };
+const MODO: Record<Snapshot["mode"], string> = { db: "en_vivo", live: "en_vivo", replay: "replay", sim: "simulacion", demo: "demo" };
 
 export function botResponse(snap: Snapshot, opts: { departamento?: Departamento | null; minNivel?: number } = {}) {
   const deptos = opts.departamento ? [opts.departamento] : [...DEPARTAMENTOS];
