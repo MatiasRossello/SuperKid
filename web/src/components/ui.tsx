@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { freezeScenario, stopScenario, type ActiveScenario } from "./useApp";
 import type { DemoConfig } from "@/lib/demo";
 import { DEMO, SCENARIOS } from "@/lib/scenarios";

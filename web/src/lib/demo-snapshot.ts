@@ -76,6 +76,7 @@ export function demoSnapshot(config: DemoConfig, at?: string, dayIndex = 0): Sna
       nombre: "Estación Demo",
       departamento: d,
       temp: clamp(day.max, 26, -10, 50),
+      humedad: null,
       precipitacion: mm || null,
       read_at: resolvedAt,
     }],
