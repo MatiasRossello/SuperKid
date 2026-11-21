@@ -76,7 +76,7 @@ export function answer(question: string, depto: string, snap: Snapshot): Reply {
   const zone = snap.zones[depto as keyof Snapshot["zones"]];
   const intent = intentOf(question);
   const sim = snap.mode === "sim";
-  const label = (s: string) => (sim ? `Simulación (${s})` : snap.mode === "demo" ? `Demo (${s})` : s);
+  const label = (s: string) => (sim ? `Simulación (${s})` : s);
   const src = (name: string, at: string) => `${label(name)} · ${timeMza(at)}`;
   const reply = (text: string, source: string): Reply => ({ intent, text, source });
 

@@ -11,8 +11,8 @@ const clamp = (n: unknown, def: number, min: number, max: number) =>
   typeof n === "number" && Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : def;
 
 /** Selected demo date at the current Mendoza clock time. */
-export function demoAt(config: DemoConfig, now?: number): string {
-  const date = config.days[0]?.date || "2026-01-01";
+export function demoAt(config: DemoConfig, now?: number, dayIndex = 0): string {
+  const date = config.days[dayIndex]?.date || config.days[0]?.date || "2026-01-01";
   const n = now ?? (typeof window !== "undefined" ? Date.now() : Date.parse(`${date}T12:00:00-03:00`));
   const hhmm = new Date(n - 3 * 3600_000).toISOString().slice(11, 16);
   return new Date(`${date}T${hhmm}:00-03:00`).toISOString();
@@ -25,9 +25,10 @@ const SMN: Partial<Record<DemoCondition, { nivel: SmnLevel; evento: string }>> =
   roja: { nivel: "roja", evento: "tormentas" },
 };
 
-export function demoSnapshot(config: DemoConfig, at = demoAt(config)): Snapshot {
+export function demoSnapshot(config: DemoConfig, at?: string, dayIndex = 0): Snapshot {
+  const resolvedAt = at ?? demoAt(config, undefined, dayIndex);
   const d = config.departamento;
-  const day = config.days[0];
+  const day = config.days[dayIndex] ?? config.days[0];
   const [lat, lng] = departamentoCenter(d);
 
   const mm = day.condition === "lluvia" ? clamp(day.mm, 12, 0.1, 200) : 0;
@@ -39,16 +40,15 @@ export function demoSnapshot(config: DemoConfig, at = demoAt(config)): Snapshot 
   const smn = SMN[day.condition] ?? null;
 
   const levels = computeLevels({
-    impacts: impact ? { at, items: [impact] } : null,
-    forecast: { at, texto: forecastText(day.condition, d) },
-    rain: mm ? [{ at, departamento: d, estacion: "Estación Demo", mm }] : [],
-    smn: smn ? [{ at, departamento: d, ...smn }] : [],
+    impacts: impact ? { at: resolvedAt, items: [impact] } : null,
+    forecast: { at: resolvedAt, texto: forecastText(day.condition, d) },
+    rain: mm ? [{ at: resolvedAt, departamento: d, estacion: "Estación Demo", mm }] : [],
+    smn: smn ? [{ at: resolvedAt, departamento: d, ...smn }] : [],
   });
 
-  // Fictitious sources are tagged so a screenshot never passes them off as official data.
   const zones = Object.fromEntries(DEPARTAMENTOS.map((x): [Departamento, Zone] => {
-    const reasons = levels[x].reasons.map((r) => ({ ...r, fuente: `Demo · ${r.fuente}` }));
-    return [x, { level: levels[x].level, sources: reasons, summary: templateSummary(x, levels[x].level, reasons), updated_at: at }];
+    const reasons = levels[x].reasons;
+    return [x, { level: levels[x].level, sources: reasons, summary: templateSummary(x, levels[x].level, reasons), updated_at: resolvedAt }];
   })) as Record<Departamento, Zone>;
 
   const forecast = config.days.map((x) => ({
@@ -68,7 +68,7 @@ export function demoSnapshot(config: DemoConfig, at = demoAt(config)): Snapshot 
 
   return {
     mode: "demo",
-    at,
+    at: resolvedAt,
     frames: [],
     zones,
     forecast,
@@ -77,7 +77,7 @@ export function demoSnapshot(config: DemoConfig, at = demoAt(config)): Snapshot 
       departamento: d,
       temp: clamp(day.max, 26, -10, 50),
       precipitacion: mm || null,
-      read_at: at,
+      read_at: resolvedAt,
     }],
     rayos,
     cells: impact ? [{ lat, lng, prob, area_km2: area }] : [],

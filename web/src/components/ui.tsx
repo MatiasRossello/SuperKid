@@ -1,8 +1,6 @@
 "use client";
-import Image from "next/image";
-import { freezeScenario, stopDemo, stopScenario, type ActiveScenario } from "./useApp";
+import { freezeScenario, stopScenario, type ActiveScenario } from "./useApp";
 import type { DemoConfig } from "@/lib/demo";
-import { conditionLabel } from "@/lib/demo";
 import { DEMO, SCENARIOS } from "@/lib/scenarios";
 import { timeMza } from "@/lib/copy";
 
@@ -12,12 +10,12 @@ export function Stars({ level, size = 22, on = "#FFC94B", off = "#7C6A99", strok
   // Level 5 = police siren: filled stars alternate red/blue and blink like emergency lights (light only, no sound).
   const siren = level >= 5;
   return (
-    <div role="img" aria-label={siren ? "Nivel 5 de 5 · sirena de alerta" : `Nivel ${level} de 5`} className="flex gap-1">
+    <div key={siren ? "siren" : `lvl-${level}`} role="img" aria-label={siren ? "Nivel 5 de 5 · sirena de alerta" : `Nivel ${level} de 5`} className="flex gap-1">
       {[1, 2, 3, 4, 5].map((i) => {
         const filled = i <= level;
-        const cls = siren && filled ? (i % 2 === 1 ? "siren-red" : "siren-blue") : undefined;
+        const cls = siren && filled ? (i % 2 === 1 ? "siren-red" : "siren-blue") : "";
         return (
-          <svg key={i} aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill={filled ? on : "none"} stroke={filled ? stroke ?? "none" : off} strokeWidth="1.5" className={cls}>
+          <svg key={i} aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill={filled ? on : "none"} stroke={filled ? stroke ?? "none" : off} strokeWidth="1.5" className={cls || undefined}>
             <path d={STAR} />
           </svg>
         );
@@ -35,19 +33,8 @@ export function Disclaimer({ children }: { children?: React.ReactNode }) {
   return <p className="text-xs text-muted">{children}{children ? " · " : ""}No reemplaza las alertas oficiales · Emergencias: 911</p>;
 }
 
-/** Always visible during a replay, simulation, or demo, so it is never mistaken for a live alert. */
-export function ScenarioBar({ scenario, demo }: { scenario: ActiveScenario | null; demo?: DemoConfig | null }) {
-  if (demo) {
-    const day = demo.days[0];
-    return (
-      <div className="sticky top-0 z-[1000] bg-teal px-4 py-1.5 text-night">
-        <div className="flex items-center justify-between gap-2">
-          <span className="font-display text-sm tracking-widest">DEMO · {demo.departamento} · {day.date} · {conditionLabel(day.condition)} · DATOS FICTICIOS</span>
-          <button onClick={stopDemo} className="min-h-11 rounded-full border-2 border-night px-3 text-xs font-bold">Salir</button>
-        </div>
-      </div>
-    );
-  }
+/** Always visible during a replay or simulation, so it is never mistaken for a live alert. */
+export function ScenarioBar({ scenario }: { scenario: ActiveScenario | null; demo?: DemoConfig | null }) {
   if (!scenario) return null;
   const s = SCENARIOS[scenario.id];
   return (

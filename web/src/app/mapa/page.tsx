@@ -46,7 +46,7 @@ export default function Mapa() {
           <div className="flex items-center gap-2 rounded-full border-[1.5px] border-pink bg-map/85 px-4 py-2.5">
             <span className={`size-2 rounded-full bg-pink ${idx === null && !replayAt ? "animate-pulse" : ""}`} />
             <span className="font-display text-sm tracking-[1.5px]">
-              {demo ? "DEMO" : scenario ? (scenario.id === "replay" ? "REPLAY" : "SIMULACIÓN") : idx === null ? "EN VIVO" : "HISTORIAL"} · {frame ? frameLocal(frame) : (scenario || demo) && snap ? timeMza(snap.at) : "--:--"}
+              {scenario ? (scenario.id === "replay" ? "REPLAY" : "SIMULACIÓN") : idx === null ? "EN VIVO" : "HISTORIAL"} · {frame ? frameLocal(frame) : scenario && snap ? timeMza(snap.at) : "--:--"}
             </span>
           </div>
           <span className="size-11" />

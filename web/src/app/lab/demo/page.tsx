@@ -74,6 +74,7 @@ export default function DemoLab() {
   const router = useRouter();
   const [, setDepto] = useDepto();
   const [config, setConfig] = useState<DemoConfig>(initialConfig);
+  const [previewDay, setPreviewDay] = useState(0);
   const [models, setModels] = useState<Set<ModelId>>(new Set([MODELS[0].id]));
   const secretRef = useRef<HTMLInputElement>(null);
   const [res, setRes] = useState<LabResponse | null>(null);
@@ -83,7 +84,8 @@ export default function DemoLab() {
   useEffect(() => { if (secretRef.current) secretRef.current.value = getSecret(); }, []);
 
   const ready = config.days.every((d) => /^\d{4}-\d{2}-\d{2}$/.test(d.date));
-  const snap = ready ? demoSnapshot(config) : null;
+  const dayIndex = Math.min(previewDay, Math.max(config.days.length - 1, 0));
+  const snap = ready ? demoSnapshot(config, undefined, dayIndex) : null;
   const zone = snap?.zones[config.departamento];
   const setDay = (i: number, d: DemoDay) => setConfig((c) => ({ ...c, days: c.days.map((x, j) => (j === i ? d : x)) }));
   const addDay = () => setConfig((c) => {
@@ -93,8 +95,12 @@ export default function DemoLab() {
   });
 
   const apply = () => {
+    const days = config.days.map((d, i) => (i === dayIndex ? d : d));
+    // Put selected preview day first so the app shows it as "now".
+    const ordered = [days[dayIndex], ...days.filter((_, i) => i !== dayIndex)];
+    const cfg = { ...config, days: ordered };
     setDepto(config.departamento);
-    startDemo(config);
+    startDemo(cfg);
     router.push("/");
   };
 
@@ -151,10 +157,20 @@ export default function DemoLab() {
 
       <section className="flex flex-col gap-3 rounded-2xl border-[1.5px] border-line bg-night p-4">
         <span className="font-display text-xs tracking-[2px] text-sun">PREVIEW · LO QUE VERÍA LA APP</span>
+        {config.days.length > 1 && (
+          <div role="group" aria-label="Día a previsualizar" className="flex flex-wrap gap-1.5">
+            {config.days.map((d, i) => (
+              <button key={i} type="button" onClick={() => setPreviewDay(i)} aria-pressed={dayIndex === i}
+                className={`min-h-11 rounded-full border-2 px-3 text-xs font-bold ${dayIndex === i ? "border-teal bg-teal text-night" : "border-line text-cream"}`}>
+                Día {i + 1} · {d.date || "—"}
+              </button>
+            ))}
+          </div>
+        )}
         {zone ? (
           <>
             <div className="flex justify-end"><Wanted level={zone.level} /></div>
-            <div className="flex items-center gap-3"><Stars level={zone.level} size={28} /><span className="text-sm text-muted">Nivel {zone.level}/5 · {conditionLabel(config.days[0].condition)}</span></div>
+            <div className="flex items-center gap-3"><Stars level={zone.level} size={28} /><span className="text-sm text-muted">Nivel {zone.level}/5 · {conditionLabel(config.days[dayIndex].condition)}</span></div>
             <p className="text-sm text-lilac">{zone.summary}</p>
             <p className="text-xs text-muted">Fuentes: {zone.sources.map((s) => s.fuente).join(", ") || "—"}</p>
           </>
@@ -163,6 +179,9 @@ export default function DemoLab() {
 
       <button onClick={apply} disabled={!ready} className="h-14 rounded-full bg-pink font-display text-xl tracking-wider disabled:opacity-60">APLICAR A LA APP (DEMO)</button>
       <p className="text-center text-xs text-muted">Aplica la demo en esta sesión: Inicio, Alerta y Mapa van a mostrar estos datos ficticios.</p>
+
+      <Link href="/lab/demo/chat" className="flex h-14 items-center justify-center rounded-full border-2 border-teal font-display text-xl tracking-wider text-teal">DEMO CHAT (UN SOLO PROMPT)</Link>
+      <p className="text-center text-xs text-muted">Abre un chat con aspecto normal. Escribí un prompt y muestra todas las animaciones/estrellas en secuencia.</p>
 
       <section className="flex flex-col gap-3 rounded-2xl bg-card p-4">
         <span className="font-display tracking-[2px] text-sun">PROBAR CON MODELO (PROMPT REAL)</span>
