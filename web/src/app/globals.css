@@ -25,27 +25,6 @@ body { font-family: var(--font-inter), system-ui, sans-serif; -webkit-tap-highli
 /* ── Escena del personaje ─────────────────────────────── */
 @keyframes pop { from { opacity: 0; transform: scale(.94) translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
-@keyframes fall { to { background-position: -20px 120px, 0 0; } }
-@keyframes fall-hail { to { background-position: 0 97px, 0 71px, 0 113px; } }
-@keyframes gust { to { -webkit-mask-position: -240px 0; mask-position: -240px 0; } }
 
-.fx-rain {
-  background-image: repeating-linear-gradient(100deg, transparent 0 17px, rgba(190, 215, 255, .38) 17px 18.5px), linear-gradient(transparent, transparent);
-  background-size: 120px 120px, 100% 100%;
-  animation: fall .55s linear infinite;
-}
-.fx-hail {
-  background-image: radial-gradient(circle 2.5px at 8px 8px, rgba(255, 255, 255, .75) 92%, transparent), radial-gradient(circle 2px at 52px 41px, rgba(255, 255, 255, .6) 92%, transparent), radial-gradient(circle 3px at 29px 77px, rgba(255, 255, 255, .7) 92%, transparent);
-  background-size: 83px 97px, 61px 71px, 107px 113px;
-  animation: fall-hail .6s linear infinite;
-}
-.fx-wind {
-  background: repeating-linear-gradient(0deg, transparent 0 37px, rgba(255, 235, 210, .5) 37px 39px, transparent 39px 83px, rgba(255, 235, 210, .4) 83px 84px, transparent 84px 131px);
-  -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 90px, transparent 90px 240px);
-  mask-image: repeating-linear-gradient(90deg, #000 0 90px, transparent 90px 240px);
-  -webkit-mask-size: 240px 100%;
-  mask-size: 240px 100%;
-  animation: gust 1s linear infinite;
-}
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }

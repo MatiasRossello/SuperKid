@@ -2,20 +2,33 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Logo, Pin, ScenarioBar, SpeechBubble, Wanted } from "@/components/ui";
 import { useDepto, useSnapshot } from "@/components/useApp";
 import { answer, moodOf, POSES, type Mood } from "@/lib/chat";
 import { headline, timeMza } from "@/lib/copy";
 
-// Weather tint over the background road scene.
-const TINT: Record<Mood, string> = {
-  calma: "linear-gradient(180deg, rgba(255,160,60,.08), rgba(23,10,43,.35))",
-  lluvia: "linear-gradient(180deg, rgba(20,30,70,.72), rgba(30,60,110,.55))",
-  granizo: "linear-gradient(180deg, rgba(25,22,45,.82), rgba(60,60,85,.6))",
-  viento: "linear-gradient(180deg, rgba(120,60,20,.5), rgba(200,120,50,.35))",
-};
-const FX: Record<Mood, string> = { calma: "", lluvia: "fx-rain", granizo: "fx-hail", viento: "fx-wind" };
+// Animated background per weather (public/superkid/bg-*.mp4). Calm has no video: static road + warm tint.
+const BG: Partial<Record<Mood, string>> = { lluvia: "lluvia", granizo: "granizo", viento: "viento" };
+
+const reducedMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+const subscribeMotion = (cb: () => void) => { const m = matchMedia("(prefers-reduced-motion: reduce)"); m.addEventListener("change", cb); return () => m.removeEventListener("change", cb); };
+
+function Backdrop({ mood }: { mood: Mood }) {
+  const still = useSyncExternalStore(subscribeMotion, reducedMotion, () => false);
+  const bg = BG[mood];
+  if (!bg) return (
+    <>
+      <Image src="/superkid/fondo.webp" alt="" fill priority sizes="480px" className="object-cover object-bottom" />
+      <div aria-hidden="true" className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(255,160,60,.08), rgba(23,10,43,.35))" }} />
+    </>
+  );
+  return still
+    ? <Image src={`/superkid/bg-${bg}.webp`} alt="" fill sizes="480px" className="object-cover" />
+    : <video key={bg} aria-hidden="true" autoPlay loop muted playsInline preload="auto" poster={`/superkid/bg-${bg}.webp`} className="absolute inset-0 size-full animate-[fadein_.5s_ease-out] object-cover">
+        <source src={`/superkid/bg-${bg}.mp4`} type="video/mp4" />
+      </video>;
+}
 
 export default function Home() {
   const [depto] = useDepto();
@@ -51,10 +64,7 @@ export default function Home() {
     <main className="relative flex h-dvh flex-col overflow-hidden bg-night">
       <ScenarioBar scenario={scenario} />
 
-      {/* fondo: la entrada al parque, teñida según el clima */}
-      <Image src="/superkid/fondo.webp" alt="" fill priority sizes="480px" className="object-cover object-bottom" />
-      <div aria-hidden="true" className="absolute inset-0 transition-[background] duration-700" style={{ background: TINT[mood] }} />
-      {FX[mood] && <div aria-hidden="true" className={`pointer-events-none absolute inset-0 ${FX[mood]}`} />}
+      <Backdrop mood={mood} />
 
       <header className="relative z-10 flex items-start justify-between px-4 pt-[max(env(safe-area-inset-top),14px)]">
         <div className="flex flex-col gap-1.5">
@@ -90,22 +100,19 @@ export default function Home() {
         <div className="relative mt-3 min-h-0 flex-1">
           <Image key={`${mood}-${pose}`} src={`/superkid/${mood}-${pose}.webp`} alt={`SuperKid, ${mood === "calma" ? "tranquilo" : `con ${mood}`}`} fill priority sizes="480px"
             className="animate-[fadein_.4s_ease-out] object-contain object-bottom drop-shadow-[0_8px_0_rgba(0,0,0,.35)]" />
-          <nav aria-label="Acciones" className="absolute bottom-2 right-0 flex flex-col gap-3">
-            <Link href="/mapa" aria-label="Abrir el mapa" className="flex size-14 flex-col items-center justify-center rounded-full border-2 border-teal bg-night/80 text-teal backdrop-blur-sm">
-              <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M9 4L3 6.5v13L9 17l6 3 6-2.5v-13L15 7zM9 4v13M15 7v13" /></svg>
-              <span className="font-display text-[10px] tracking-wider">MAPA</span>
-            </Link>
-          </nav>
+          <Link href="/mapa" aria-label="Abrir el mapa" className="absolute bottom-1 left-0 flex w-24 items-center drop-shadow-[0_4px_0_rgba(0,0,0,.45)] active:scale-95">
+            <Image src="/superkid/mapa.webp" alt="" width={96} height={98} sizes="96px" />
+          </Link>
         </div>
       </section>
 
       <footer className="relative z-10 flex flex-col gap-2.5 bg-gradient-to-t from-night via-night/90 to-transparent px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-4">
-        <form onSubmit={(e) => { e.preventDefault(); ask(text); }} className="flex gap-2">
+        <form onSubmit={(e) => { e.preventDefault(); ask(text); }} className="relative">
           <label htmlFor="pregunta" className="sr-only">Preguntale a SuperKid sobre el tiempo</label>
           <input id="pregunta" value={text} onChange={(e) => setText(e.target.value)} maxLength={140} enterKeyHint="send" autoComplete="off"
-            placeholder="Preguntale a SuperKid…" className="h-12 min-w-0 flex-1 rounded-full border-[1.5px] border-line bg-card px-4 text-base text-cream placeholder:text-muted" />
-          <button type="submit" aria-label="Enviar pregunta" disabled={thinking} className="flex size-12 shrink-0 items-center justify-center rounded-full bg-pink disabled:opacity-60">
-            <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFF4E8" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12l16-8-6 16-3-7z" /></svg>
+            placeholder="Preguntale a SuperKid…" className="h-12 w-full rounded-full border-[1.5px] border-line bg-card pl-4 pr-14 text-base text-cream placeholder:text-muted" />
+          <button type="submit" aria-label="Enviar pregunta" disabled={thinking} className="absolute right-1.5 top-1.5 flex size-9 items-center justify-center rounded-full bg-pink disabled:opacity-60">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFF4E8" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12l16-8-6 16-3-7z" /></svg>
           </button>
         </form>
         <p className="text-center text-[10px] text-muted">Datos oficiales DACC · No reemplaza las alertas oficiales · 911</p>
