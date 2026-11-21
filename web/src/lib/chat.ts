@@ -28,6 +28,9 @@ const RULES: [Intent, RegExp][] = [
   ["manana", /manana|semana|proxim|pasado|despues/],
 ];
 
+/** Gran Mendoza departamentos that do have DACC stations, for the ones that don't. */
+const NEARBY = ["Maipú", "Luján de Cuyo"];
+
 const plain = (s: string) => s.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "");
 
 export function intentOf(question: string): Intent {
@@ -96,7 +99,15 @@ export function answer(question: string, depto: string, snap: Snapshot): Reply {
       const storm = zone.sources.find((r) => r.dato.pronostico !== undefined);
       if (storm) return reply(`El pronóstico de la DACC anuncia tormentas para ${depto}. Todavía no hay lluvia medida.`, sourcesOf([storm]));
       if (stations.length) return reply(`Ninguna estación de ${depto} registra lluvia ahora.`, src("Estaciones DACC", stations[0].read_at));
-      return reply(`No tengo datos de estaciones en ${depto} por ahora.`, src("Estaciones DACC", snap.at));
+      // no DACC station in Capital, Godoy Cruz, Guaymallén or Las Heras: use the closest ones in Gran Mendoza
+      const near = snap.stations.filter((s) => NEARBY.includes(s.departamento ?? ""));
+      if (near.length) {
+        const wet = near.filter((s) => s.precipitacion).sort((a, b) => b.precipitacion! - a.precipitacion!)[0];
+        return wet
+          ? reply(`En ${depto} no hay estación; la más cercana con lluvia, ${wet.nombre}, midió ${wet.precipitacion} mm.`, src("Estación DACC", wet.read_at))
+          : reply(`En ${depto} no hay estación, y las cercanas de Maipú y Luján no registran lluvia ahora.`, src("Estaciones DACC", near[0].read_at));
+      }
+      return reply(`No tengo datos de lluvia para ${depto} por ahora.`, src("Estaciones DACC", snap.at));
     }
 
     case "temperatura": {

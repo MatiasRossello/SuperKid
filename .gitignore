@@ -8,3 +8,4 @@ scratch_fetch.py
 supabase/.temp/
 supabase/.branches/
 .vscode/
+.vercel
