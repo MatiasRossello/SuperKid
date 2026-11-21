@@ -61,3 +61,19 @@ test("simulación Maipú: lluvia → granizo → zonda", async () => {
   assert.equal(simMaipuSnapshot(at(26)).zones["Capital"].level, 1); // forecast covers all Gran Mendoza
   assert.equal(simMaipuSnapshot(at(26)).zones["San Rafael"].level, 0);
 });
+
+test("API para bots", async () => {
+  const { findDepartamento } = await import("./departamentos.ts");
+  const { botResponse } = await import("./bot-api.ts");
+  const { simMaipuSnapshot } = await import("./sim-maipu.ts");
+  assert.equal(findDepartamento(" maipu "), "Maipú");
+  assert.equal(findDepartamento("LUJAN DE CUYO"), "Luján de Cuyo");
+  assert.equal(findDepartamento("Narnia"), null);
+  const r = botResponse(simMaipuSnapshot("2026-11-21T18:26:30Z"), { minNivel: 1 });
+  assert.equal(r.modo, "simulacion");
+  assert.match(r.aviso, /FICTICIOS/);
+  assert.equal(r.departamentos[0].departamento, "Maipú"); // sorted by level
+  assert.equal(r.departamentos[0].nivel, 5);
+  assert.ok(r.departamentos.every((d) => d.nivel >= 1));
+  assert.equal(botResponse(simMaipuSnapshot("2026-11-21T18:26:30Z"), { departamento: "Maipú" }).departamentos.length, 1);
+});

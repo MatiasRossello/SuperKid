@@ -10,6 +10,10 @@ export const isDepartamento = (s: unknown): s is Departamento =>
 
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
+/** "maipu", "MAIPÚ", " Lujan de cuyo " → canonical name, or null. */
+export const findDepartamento = (s: string): Departamento | null =>
+  DEPARTAMENTOS.find((d) => norm(d) === norm(s.trim())) ?? null;
+
 const GRAN_MENDOZA: Departamento[] = ["Capital", "Godoy Cruz", "Guaymallén", "Las Heras", "Luján de Cuyo", "Maipú"];
 const ESTE: Departamento[] = ["San Martín", "Rivadavia", "Junín", "Santa Rosa", "La Paz"];
 const UCO: Departamento[] = ["Tunuyán", "Tupungato", "San Carlos"];
