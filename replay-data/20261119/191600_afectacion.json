@@ -1,0 +1,50 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 19,
+    "altitud_m": 555,
+    "paraje_referencia": "La Llave Sur",
+    "distancia_min_km": 0.4,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "General Alvear",
+    "area_impacto_km2": 12,
+    "altitud_m": 416,
+    "paraje_referencia": "Campo Grariel",
+    "distancia_min_km": 12.3,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 12,
+    "altitud_m": 565,
+    "paraje_referencia": "Las Aguaditas",
+    "distancia_min_km": 0.3,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 4,
+    "altitud_m": 560,
+    "paraje_referencia": "Colonia Colomer",
+    "distancia_min_km": 2.1,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 3,
+    "altitud_m": 547,
+    "paraje_referencia": "Colonia Gelman",
+    "distancia_min_km": 2.9,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 2,
+    "altitud_m": 568,
+    "paraje_referencia": "Cañada Seca",
+    "distancia_min_km": 3.6,
+    "prob_max": 95.0
+  }
+]

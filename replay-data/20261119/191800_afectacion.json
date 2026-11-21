@@ -1,0 +1,34 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 23,
+    "altitud_m": 559,
+    "paraje_referencia": "La Llave Sur",
+    "distancia_min_km": 0.4,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 6,
+    "altitud_m": 565,
+    "paraje_referencia": "Las Aguaditas",
+    "distancia_min_km": 0.7,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 5,
+    "altitud_m": 560,
+    "paraje_referencia": "Colonia Colomer",
+    "distancia_min_km": 2.1,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 3,
+    "altitud_m": 547,
+    "paraje_referencia": "Colonia Gelman",
+    "distancia_min_km": 2.9,
+    "prob_max": 95.0
+  }
+]

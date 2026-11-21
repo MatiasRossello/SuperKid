@@ -1,0 +1,10 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 2,
+    "altitud_m": 453,
+    "paraje_referencia": "La Horqueta",
+    "distancia_min_km": 19.3,
+    "prob_max": 85.0
+  }
+]

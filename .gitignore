@@ -1,0 +1,10 @@
+.DS_Store
+node_modules/
+.env*
+!.env.example
+# one-off scratch (raw IGN geojson, downloader)
+scratch-geo/
+scratch_fetch.py
+supabase/.temp/
+supabase/.branches/
+.vscode/

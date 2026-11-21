@@ -1,0 +1,18 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 4,
+    "altitud_m": 1340,
+    "paraje_referencia": "Dique Los Reyunos",
+    "distancia_min_km": 7.3,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 2,
+    "altitud_m": 1342,
+    "paraje_referencia": "Cuesta de los Terneros",
+    "distancia_min_km": 7.8,
+    "prob_max": 95.0
+  }
+]

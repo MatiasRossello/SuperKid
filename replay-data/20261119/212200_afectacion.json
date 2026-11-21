@@ -1,0 +1,18 @@
+[
+  {
+    "departamento": "Santa Rosa",
+    "area_impacto_km2": 34,
+    "altitud_m": 688,
+    "paraje_referencia": "Comandante Salas",
+    "distancia_min_km": 15.6,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "Santa Rosa",
+    "area_impacto_km2": 2,
+    "altitud_m": 669,
+    "paraje_referencia": "ñacuñan",
+    "distancia_min_km": 18.5,
+    "prob_max": 95.0
+  }
+]

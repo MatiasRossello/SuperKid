@@ -1,0 +1,18 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 87,
+    "altitud_m": 491,
+    "paraje_referencia": "Goico",
+    "distancia_min_km": 5.8,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 24,
+    "altitud_m": 1153,
+    "paraje_referencia": "La Tosca",
+    "distancia_min_km": 15.9,
+    "prob_max": 95.0
+  }
+]

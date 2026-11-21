@@ -1,0 +1,34 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 135,
+    "altitud_m": 484,
+    "paraje_referencia": "Goico",
+    "distancia_min_km": 3.0,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 31,
+    "altitud_m": 1131,
+    "paraje_referencia": "La Tosca",
+    "distancia_min_km": 15.7,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "General Alvear",
+    "area_impacto_km2": 2,
+    "altitud_m": 346,
+    "paraje_referencia": "El Algarrobal",
+    "distancia_min_km": 7.2,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "General Alvear",
+    "area_impacto_km2": 2,
+    "altitud_m": 345,
+    "paraje_referencia": "La Cortadera Grande",
+    "distancia_min_km": 7.1,
+    "prob_max": 95.0
+  }
+]

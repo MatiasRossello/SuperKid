@@ -1,0 +1,34 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 27,
+    "altitud_m": 558,
+    "paraje_referencia": "La Llave Sur",
+    "distancia_min_km": 0.4,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 19,
+    "altitud_m": 541,
+    "paraje_referencia": "Colonia Gelman",
+    "distancia_min_km": 0.3,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 15,
+    "altitud_m": 550,
+    "paraje_referencia": "El Vidalino",
+    "distancia_min_km": 0.4,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "General Alvear",
+    "area_impacto_km2": 4,
+    "altitud_m": 385,
+    "paraje_referencia": "Campo Grariel",
+    "distancia_min_km": 9.4,
+    "prob_max": 95.0
+  }
+]

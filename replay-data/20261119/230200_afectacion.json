@@ -1,0 +1,10 @@
+[
+  {
+    "departamento": "Lavalle",
+    "area_impacto_km2": 25,
+    "altitud_m": 587,
+    "paraje_referencia": "Arroyito",
+    "distancia_min_km": 15.9,
+    "prob_max": 95.0
+  }
+]

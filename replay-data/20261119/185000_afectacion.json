@@ -1,0 +1,18 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 9,
+    "altitud_m": 620,
+    "paraje_referencia": "Las Malvinas Norte",
+    "distancia_min_km": 1.6,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 7,
+    "altitud_m": 637,
+    "paraje_referencia": "El Escorial",
+    "distancia_min_km": 1.4,
+    "prob_max": 95.0
+  }
+]

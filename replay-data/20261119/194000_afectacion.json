@@ -1,0 +1,10 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 57,
+    "altitud_m": 527,
+    "paraje_referencia": "Colonia Gelman",
+    "distancia_min_km": 0.3,
+    "prob_max": 95.0
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 3,
+    "altitud_m": 838,
+    "paraje_referencia": "Rincón del Atuel",
+    "distancia_min_km": 5.5,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 2,
+    "altitud_m": 996,
+    "paraje_referencia": "El Escorial",
+    "distancia_min_km": 6.1,
+    "prob_max": 95.0
+  }
+]

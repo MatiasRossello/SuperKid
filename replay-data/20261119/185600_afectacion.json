@@ -1,0 +1,18 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 7,
+    "altitud_m": 598,
+    "paraje_referencia": "Las Malvinas Norte",
+    "distancia_min_km": 3.4,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 4,
+    "altitud_m": 597,
+    "paraje_referencia": "Cañada Seca",
+    "distancia_min_km": 3.7,
+    "prob_max": 95.0
+  }
+]

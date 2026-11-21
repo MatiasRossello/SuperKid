@@ -1,0 +1,10 @@
+[
+  {
+    "departamento": "La Paz",
+    "area_impacto_km2": 33,
+    "altitud_m": 513,
+    "paraje_referencia": "Colonia Japonesa",
+    "distancia_min_km": 11.0,
+    "prob_max": 95.0
+  }
+]

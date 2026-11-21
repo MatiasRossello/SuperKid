@@ -1,0 +1,18 @@
+[
+  {
+    "departamento": "La Paz",
+    "area_impacto_km2": 42,
+    "altitud_m": 517,
+    "paraje_referencia": "Colonia Japonesa",
+    "distancia_min_km": 13.7,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "La Paz",
+    "area_impacto_km2": 2,
+    "altitud_m": 505,
+    "paraje_referencia": "Ramblón de la Pampa",
+    "distancia_min_km": 16.5,
+    "prob_max": 95.0
+  }
+]

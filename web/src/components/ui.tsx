@@ -1,0 +1,73 @@
+"use client";
+import { stopReplay } from "./useApp";
+import { timeMza } from "@/lib/copy";
+
+const STAR = "M12 2l3 7h7l-5.5 4.5 2 7.5-6.5-4.5-6.5 4.5 2-7.5L2 9h7z";
+
+export function Stars({ level, size = 22, on = "#FFC94B", off = "#7C6A99", stroke }: { level: number; size?: number; on?: string; off?: string; stroke?: string }) {
+  return (
+    <div role="img" aria-label={`Nivel ${level} de 5`} className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <svg key={i} aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill={i <= level ? on : "none"} stroke={i <= level ? stroke ?? "none" : off} strokeWidth="1.5">
+          <path d={STAR} />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
+export function Logo({ size = 34 }: { size?: number }) {
+  return (
+    <div className="font-display leading-none tracking-wide text-cream" style={{ fontSize: size, textShadow: `${Math.round(size / 11)}px ${Math.round(size / 11)}px 0 #FF2E88` }}>
+      SUPER<span className="text-sun">KID</span>
+    </div>
+  );
+}
+
+export function Disclaimer({ children }: { children?: React.ReactNode }) {
+  return <p className="text-xs text-muted">{children}{children ? " · " : ""}No reemplaza las alertas oficiales · Emergencias: 911</p>;
+}
+
+/** Always visible during the replay, so stored data is never mistaken for a live alert. */
+export function ReplayBar({ at }: { at: string | null }) {
+  if (!at) return null;
+  return (
+    <div className="sticky top-0 z-[1000] flex items-center justify-between gap-2 bg-sun px-4 py-2 text-night">
+      <span className="font-display text-sm tracking-widest">REPLAY 19/11 · {timeMza(at)} · DATOS GUARDADOS</span>
+      <button onClick={stopReplay} className="min-h-11 rounded-full border-2 border-night px-3 text-xs font-bold">Salir</button>
+    </div>
+  );
+}
+
+export function Pin() {
+  return (
+    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z" />
+    </svg>
+  );
+}
+
+export function Sunset({ height = 300, children }: { height?: number; children?: React.ReactNode }) {
+  return (
+    <div className="relative overflow-hidden" style={{ height, background: "linear-gradient(180deg,#2A0F4A 0%,#8A1F6B 45%,#FF4F7B 72%,#FF9A3C 100%)" }}>
+      <svg aria-hidden="true" className="absolute inset-0 h-full w-full" viewBox="0 0 390 300" preserveAspectRatio="xMidYMax slice">
+        <circle cx="270" cy="236" r="70" fill="#FFC94B" opacity="0.9" />
+        <rect x="190" y="214" width="160" height="4" fill="#FF6F5E" />
+        <rect x="190" y="228" width="160" height="6" fill="#FF6F5E" />
+        <rect x="190" y="244" width="160" height="8" fill="#FF6F5E" />
+        <path d="M0 300 L0 238 L46 196 L86 226 L132 168 L176 214 L214 186 L262 232 L300 204 L346 240 L390 214 L390 300 Z" fill="#3B1050" />
+        <path d="M0 300 L0 262 L70 240 L140 258 L210 236 L290 262 L390 244 L390 300 Z" fill="#170A2B" />
+      </svg>
+      {children}
+    </div>
+  );
+}
+
+export function ForecastIcon({ name, storm }: { name: string; storm: boolean }) {
+  const n = name.toLowerCase();
+  if (storm)
+    return <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF8FB5" strokeWidth="2"><path d="M7 15h10a4 4 0 0 0 0-8 6 6 0 0 0-11.5 1.5A3.5 3.5 0 0 0 7 15zM12 15l-2 4h3l-2 4" /></svg>;
+  if (n.includes("despejado") || n.includes("soleado"))
+    return <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFC94B" strokeWidth="2"><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg>;
+  return <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2EE6D6" strokeWidth="2"><path d="M7 17h10a4 4 0 0 0 0-8 6 6 0 0 0-11.5 1.5A3.5 3.5 0 0 0 7 17z" /></svg>;
+}

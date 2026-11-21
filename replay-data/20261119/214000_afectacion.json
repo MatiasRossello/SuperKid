@@ -1,0 +1,10 @@
+[
+  {
+    "departamento": "Santa Rosa",
+    "area_impacto_km2": 51,
+    "altitud_m": 601,
+    "paraje_referencia": "Comandante Salas",
+    "distancia_min_km": 0.4,
+    "prob_max": 95.0
+  }
+]

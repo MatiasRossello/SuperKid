@@ -1,0 +1,24 @@
+[
+  {
+    "hora_fin": "21:30",
+    "altitud_m": 729,
+    "prob_max": 95.0,
+    "distancia_min_km": 7.4,
+    "departamento": "San Rafael",
+    "intervalo": "20:50 - 21:30",
+    "area_impacto_km2": 71,
+    "hora_inicio": "20:50",
+    "paraje_referencia": "Los Toldos"
+  },
+  {
+    "hora_fin": "22:22",
+    "altitud_m": 489,
+    "prob_max": 95.0,
+    "distancia_min_km": 2.0,
+    "departamento": "San Rafael",
+    "intervalo": "22:20 - 22:22",
+    "area_impacto_km2": 6,
+    "hora_inicio": "22:20",
+    "paraje_referencia": "Soitué"
+  }
+]

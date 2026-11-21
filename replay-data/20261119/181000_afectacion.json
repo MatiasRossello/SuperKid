@@ -1,0 +1,10 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 3,
+    "altitud_m": 1020,
+    "paraje_referencia": "Valle Grande",
+    "distancia_min_km": 5.9,
+    "prob_max": 95.0
+  }
+]

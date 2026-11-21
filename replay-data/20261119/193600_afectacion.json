@@ -1,0 +1,18 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 88,
+    "altitud_m": 528,
+    "paraje_referencia": "Colonia Gelman",
+    "distancia_min_km": 0.3,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 3,
+    "altitud_m": 548,
+    "paraje_referencia": "El Vidalino",
+    "distancia_min_km": 1.2,
+    "prob_max": 95.0
+  }
+]

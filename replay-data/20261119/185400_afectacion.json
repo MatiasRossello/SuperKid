@@ -1,0 +1,10 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 6,
+    "altitud_m": 598,
+    "paraje_referencia": "Las Malvinas Norte",
+    "distancia_min_km": 2.4,
+    "prob_max": 95.0
+  }
+]

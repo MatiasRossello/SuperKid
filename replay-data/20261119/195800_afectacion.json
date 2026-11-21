@@ -1,0 +1,26 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 91,
+    "altitud_m": 507,
+    "paraje_referencia": "Goico",
+    "distancia_min_km": 5.2,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 8,
+    "altitud_m": 508,
+    "paraje_referencia": "Guadales",
+    "distancia_min_km": 11.8,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 6,
+    "altitud_m": 521,
+    "paraje_referencia": "Colonia Gelman",
+    "distancia_min_km": 10.8,
+    "prob_max": 95.0
+  }
+]

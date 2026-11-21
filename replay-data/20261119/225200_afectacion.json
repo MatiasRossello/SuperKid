@@ -1,0 +1,10 @@
+[
+  {
+    "departamento": "La Paz",
+    "area_impacto_km2": 3,
+    "altitud_m": 489,
+    "paraje_referencia": "La Gloriosa",
+    "distancia_min_km": 5.4,
+    "prob_max": 95.0
+  }
+]

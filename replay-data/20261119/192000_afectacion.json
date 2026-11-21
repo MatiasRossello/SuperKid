@@ -1,0 +1,18 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 28,
+    "altitud_m": 559,
+    "paraje_referencia": "La Llave Sur",
+    "distancia_min_km": 0.4,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 3,
+    "altitud_m": 548,
+    "paraje_referencia": "El Vidalino",
+    "distancia_min_km": 0.6,
+    "prob_max": 95.0
+  }
+]

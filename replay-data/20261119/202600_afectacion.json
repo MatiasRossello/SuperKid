@@ -1,0 +1,18 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 14,
+    "altitud_m": 484,
+    "paraje_referencia": "Goico",
+    "distancia_min_km": 9.7,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "General Alvear",
+    "area_impacto_km2": 2,
+    "altitud_m": 473,
+    "paraje_referencia": "Gaspar Campos",
+    "distancia_min_km": 19.8,
+    "prob_max": 95.0
+  }
+]

@@ -1,0 +1,34 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 26,
+    "altitud_m": 565,
+    "paraje_referencia": "Las Aguaditas",
+    "distancia_min_km": 0.3,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 6,
+    "altitud_m": 578,
+    "paraje_referencia": "Cañada Seca",
+    "distancia_min_km": 2.7,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 4,
+    "altitud_m": 560,
+    "paraje_referencia": "Colonia Colomer",
+    "distancia_min_km": 2.1,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 2,
+    "altitud_m": 558,
+    "paraje_referencia": "La Llave Sur",
+    "distancia_min_km": 2.4,
+    "prob_max": 95.0
+  }
+]

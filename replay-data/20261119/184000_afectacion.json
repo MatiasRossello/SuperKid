@@ -1,0 +1,26 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 23,
+    "altitud_m": 705,
+    "paraje_referencia": "El Escorial",
+    "distancia_min_km": 0.2,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 4,
+    "altitud_m": 621,
+    "paraje_referencia": "Las Malvinas Norte",
+    "distancia_min_km": 1.7,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 3,
+    "altitud_m": 722,
+    "paraje_referencia": "Rincón del Atuel",
+    "distancia_min_km": 3.5,
+    "prob_max": 95.0
+  }
+]

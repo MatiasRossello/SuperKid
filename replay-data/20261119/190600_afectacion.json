@@ -1,0 +1,26 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 20,
+    "altitud_m": 582,
+    "paraje_referencia": "Cañada Seca",
+    "distancia_min_km": 0.5,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 8,
+    "altitud_m": 571,
+    "paraje_referencia": "Las Aguaditas",
+    "distancia_min_km": 2.6,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "Lavalle",
+    "area_impacto_km2": 2,
+    "altitud_m": 483,
+    "paraje_referencia": "Algarrobito",
+    "distancia_min_km": 13.2,
+    "prob_max": 95.0
+  }
+]

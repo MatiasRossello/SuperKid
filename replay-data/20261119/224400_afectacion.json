@@ -1,0 +1,18 @@
+[
+  {
+    "departamento": "La Paz",
+    "area_impacto_km2": 17,
+    "altitud_m": 490,
+    "paraje_referencia": "La Gloriosa",
+    "distancia_min_km": 5.1,
+    "prob_max": 95.0
+  },
+  {
+    "departamento": "La Paz",
+    "area_impacto_km2": 15,
+    "altitud_m": 500,
+    "paraje_referencia": "Colonia Japonesa",
+    "distancia_min_km": 7.9,
+    "prob_max": 95.0
+  }
+]

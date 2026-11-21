@@ -1,0 +1,10 @@
+[
+  {
+    "departamento": "San Rafael",
+    "area_impacto_km2": 34,
+    "altitud_m": 590,
+    "paraje_referencia": "Cañada Seca",
+    "distancia_min_km": 0.5,
+    "prob_max": 95.0
+  }
+]
