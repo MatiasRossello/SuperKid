@@ -14,7 +14,7 @@ const PILLS: [keyof Layers, string][] = [["dbz", "Radar"], ["granizo", "Granizo"
 
 export default function Mapa() {
   const [depto] = useDepto();
-  const { snap, scenario } = useSnapshot();
+  const { snap, scenario, demo } = useSnapshot();
   const replayAt = scenario?.at ?? null;
   const [layers, setLayers] = useState<Layers>({ dbz: true, granizo: true, rayos: true });
   const [idx, setIdx] = useState<number | null>(null); // null = follow the latest frame
@@ -38,7 +38,7 @@ export default function Mapa() {
       <RadarMap frame={frame} layers={layers} depto={depto ?? ""} levels={levels} rayos={snap?.rayos ?? []} cells={snap?.cells ?? []} />
 
       <div className="absolute inset-x-0 top-0 z-[1000]">
-        <ScenarioBar scenario={scenario} />
+        <ScenarioBar scenario={scenario} demo={demo} />
         <div className="flex items-center justify-between px-4 pt-3">
           <Link href="/" aria-label="Volver" className="flex size-11 items-center justify-center rounded-full border-[1.5px] border-teal bg-map/85">
             <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2EE6D6" strokeWidth="2.2" strokeLinecap="round"><path d="M15 5l-7 7 7 7" /></svg>
@@ -46,7 +46,7 @@ export default function Mapa() {
           <div className="flex items-center gap-2 rounded-full border-[1.5px] border-pink bg-map/85 px-4 py-2.5">
             <span className={`size-2 rounded-full bg-pink ${idx === null && !replayAt ? "animate-pulse" : ""}`} />
             <span className="font-display text-sm tracking-[1.5px]">
-              {scenario ? (scenario.id === "replay" ? "REPLAY" : "SIMULACIÓN") : idx === null ? "EN VIVO" : "HISTORIAL"} · {frame ? frameLocal(frame) : scenario ? timeMza(scenario.at) : "--:--"}
+              {demo ? "DEMO" : scenario ? (scenario.id === "replay" ? "REPLAY" : "SIMULACIÓN") : idx === null ? "EN VIVO" : "HISTORIAL"} · {frame ? frameLocal(frame) : (scenario || demo) && snap ? timeMza(snap.at) : "--:--"}
             </span>
           </div>
           <span className="size-11" />

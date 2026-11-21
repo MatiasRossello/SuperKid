@@ -29,3 +29,29 @@ body { font-family: var(--font-inter), system-ui, sans-serif; -webkit-tap-highli
 
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ── Sirena policial (nivel 5): solo luz, sin sonido ───────── */
+@keyframes siren-blink-red { 0%, 49% { opacity: 1; } 50%, 100% { opacity: .32; } }
+@keyframes siren-blink-blue { 0%, 49% { opacity: .32; } 50%, 100% { opacity: 1; } }
+@keyframes siren-glow {
+  0%, 49% { box-shadow: 0 0 0 1px rgba(255, 46, 46, .75), 0 0 20px rgba(255, 46, 46, .55); }
+  50%, 100% { box-shadow: 0 0 0 1px rgba(46, 107, 255, .75), 0 0 20px rgba(46, 107, 255, .55); }
+}
+/* The base color/glow stays even if animations are disabled (prefers-reduced-motion). */
+.siren-red {
+  fill: #FF2E2E !important;
+  stroke: #FFB3B3 !important;
+  filter: drop-shadow(0 0 5px rgba(255, 46, 46, .95));
+  animation: siren-blink-red .8s linear infinite;
+}
+.siren-blue {
+  fill: #2E6BFF !important;
+  stroke: #B3C9FF !important;
+  filter: drop-shadow(0 0 5px rgba(46, 107, 255, .95));
+  animation: siren-blink-blue .8s linear infinite;
+}
+.siren-panel { animation: siren-glow 1.6s linear infinite; }
+
+/* Test page helper: emulate prefers-reduced-motion without changing the OS setting. */
+.sim-reduced-motion,
+.sim-reduced-motion * { animation: none !important; transition: none !important; }

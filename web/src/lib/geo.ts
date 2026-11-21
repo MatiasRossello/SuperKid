@@ -22,3 +22,18 @@ export function departamentoAt(lat: number, lng: number): Departamento | null {
   }
   return null;
 }
+
+const centers = new Map<string, [number, number]>();
+
+/** Rough centroid of a departamento, used to place demo cells/lightning. */
+export function departamentoCenter(d: Departamento): [number, number] {
+  const hit = centers.get(d);
+  if (hit) return hit;
+  const f = (geo as { features: Feature[] }).features.find((x) => x.properties.departamento === d);
+  const polys = f ? ((f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates) as Ring[][]) : [];
+  const ring = polys[0]?.[0] ?? [];
+  const sum = ring.reduce(([lat, lng], [x, y]) => [lat + y, lng + x], [0, 0]);
+  const c: [number, number] = ring.length ? [sum[0] / ring.length, sum[1] / ring.length] : [-34.3, -68.5];
+  centers.set(d, c);
+  return c;
+}

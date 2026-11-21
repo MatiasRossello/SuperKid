@@ -11,7 +11,7 @@ import { templateSummary } from "./summary.ts";
 
 export type Zone = { level: number; summary: string; sources: Reason[]; updated_at: string };
 export type Snapshot = {
-  mode: "db" | "live" | "replay" | "sim";
+  mode: "db" | "live" | "replay" | "sim" | "demo";
   at: string;
   frames: FrameRef[]; // last ~30 min, oldest first
   zones: Record<Departamento, Zone>;

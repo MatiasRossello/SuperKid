@@ -33,7 +33,7 @@ function Backdrop({ mood }: { mood: Mood }) {
 
 export default function Home() {
   const [depto] = useDepto();
-  const { snap, error, scenario } = useSnapshot();
+  const { snap, error, scenario, demo } = useSnapshot();
   const router = useRouter();
   const [pushNote, setPushNote] = useState<string | null>(null);
   const [asked, setAsked] = useState<string | null>(null); // null = hasn't asked yet
@@ -86,7 +86,7 @@ export default function Home() {
 
   return (
     <main className="relative flex h-dvh flex-col overflow-hidden bg-night">
-      <ScenarioBar scenario={scenario} />
+      <ScenarioBar scenario={scenario} demo={demo} />
 
       <Backdrop mood={mood} />
 

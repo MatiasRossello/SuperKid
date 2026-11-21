@@ -35,6 +35,7 @@ export default function Lab() {
   return (
     <main className="flex flex-col gap-4 px-5 pb-12 pt-12">
       <Link href="/" className="text-sm font-semibold text-teal">← Inicio</Link>
+      <Link href="/lab/demo" className="text-sm font-semibold text-teal">Demo: simular ubicación, fecha y clima →</Link>
       <h1 className="font-display text-4xl tracking-wide">LABORATORIO DE MODELOS</h1>
       <p className="text-sm text-muted">Mismo prompt y mismos datos que el pipeline. Acá no se guarda nada ni se mandan push.</p>
 

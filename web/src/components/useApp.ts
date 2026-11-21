@@ -1,5 +1,7 @@
 "use client";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { isDemoConfig, type DemoConfig } from "@/lib/demo";
+import { demoAt, demoSnapshot } from "@/lib/demo-snapshot";
 import { isDepartamento, type Departamento } from "@/lib/departamentos";
 import { isScenario, SCENARIO_SPEED, SCENARIOS, type ScenarioId } from "@/lib/scenarios";
 import type { Snapshot } from "@/lib/status";
@@ -37,6 +39,16 @@ export const freezeScenario = (min: number) => {
 };
 export const stopScenario = () => { write(session, "sk-scn", null); write(session, "sk-scn-t0", null); write(session, "sk-scn-fix", null); };
 
+export const startDemo = (config: DemoConfig) => { stopScenario(); write(session, "sk-demo", JSON.stringify(config)); };
+export const stopDemo = () => write(session, "sk-demo", null);
+export function useDemo(): DemoConfig | null {
+  const raw = useSyncExternalStore(subscribe, () => read(session, "sk-demo"), () => null);
+  return useMemo(() => {
+    if (!raw) return null;
+    try { const v = JSON.parse(raw); return isDemoConfig(v) ? v : null; } catch { return null; }
+  }, [raw]);
+}
+
 export type ActiveScenario = { id: ScenarioId; at: string; frozen?: number };
 
 /** Running scenario and its virtual time, else null. `?replay=1` or `?sim=maipu` start one, `=0` stops it. */
@@ -67,14 +79,23 @@ export function useScenario(): ActiveScenario | null {
   return { id, at: new Date(Math.min(v, Date.parse(end))).toISOString() };
 }
 
-export function useSnapshot(): { snap: Snapshot | null; error: boolean; scenario: ActiveScenario | null } {
+export function useSnapshot(): { snap: Snapshot | null; error: boolean; scenario: ActiveScenario | null; demo: DemoConfig | null } {
+  const demo = useDemo();
   const scenario = useScenario();
-  const replayAt = scenario?.at ?? null;
+  const replayAt = !demo && scenario ? scenario.at : null;
   const [snap, setSnap] = useState<Snapshot | null>(null);
   const [error, setError] = useState(false);
-  // Replay asks per 2-min frame (cacheable); live refreshes every minute.
+  const [now, setNow] = useState(() => (typeof window !== "undefined" ? Date.now() : 0));
+  useEffect(() => {
+    if (!demo) return;
+    const iv = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(iv);
+  }, [demo]);
+
+  // Replay asks per 2-min frame (cacheable); live refreshes every minute. Demo is computed locally.
   const key = replayAt ? scenario!.id + "|" + replayAt.slice(0, 15) + String(Math.floor(Number(replayAt.slice(15, 16)) / 2) * 2) : "live";
   useEffect(() => {
+    if (demo) return;
     let dead = false;
     const load = () =>
       fetch(replayAt ? `/api/status?scenario=${scenario!.id}&at=${encodeURIComponent(key.split("|")[1] + ":00Z")}` : "/api/status")
@@ -85,6 +106,8 @@ export function useSnapshot(): { snap: Snapshot | null; error: boolean; scenario
     const id = replayAt ? undefined : setInterval(load, 60_000);
     return () => { dead = true; clearInterval(id); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
-  return { snap, error, scenario };
+  }, [demo, key]);
+
+  const demoSnap = demo ? demoSnapshot(demo, demoAt(demo, now || undefined)) : null;
+  return { snap: demo ? demoSnap : snap, error: demo ? false : error, scenario: demo ? null : scenario, demo };
 }

@@ -8,14 +8,24 @@ Reglas:
 - Máximo 2 frases, en español rioplatense (vos), tono directo y tranquilo.
 - Usá SOLO los datos del input. Si un dato no está en el input, no lo menciones. No pronostiques ni inventes horas, lugares, direcciones ni intensidades.
 - Las horas del input están en hora de Mendoza.
+- El input puede traer "fecha" y "pronostico" (próximos días). Son datos del input: podés usarlos, pero no agregues días ni condiciones que no estén.
 - Terminá con una acción concreta y razonable para el fenómeno (por ejemplo, guardar el auto bajo techo si hay granizo).
 - Devolvé solo el texto, sin comillas ni formato.`;
 
 export const hhmm = (iso: string) =>
   new Date(iso).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/Argentina/Mendoza" });
 
-export const summaryInput = (d: Departamento, level: number, reasons: Reason[]) => ({
-  departamento: d, nivel: level, datos: reasons.map((r) => ({ fuente: r.fuente, hora: hhmm(r.at), ...r.dato })),
+export type SummaryExtra = {
+  fecha?: string;
+  pronostico?: { fecha: string; condicion: string; texto: string; maxima: number; minima: number }[];
+};
+
+export const summaryInput = (d: Departamento, level: number, reasons: Reason[], extra?: SummaryExtra) => ({
+  departamento: d,
+  ...(extra?.fecha ? { fecha: extra.fecha } : {}),
+  nivel: level,
+  datos: reasons.map((r) => ({ fuente: r.fuente, hora: hhmm(r.at), ...r.dato })),
+  ...(extra?.pronostico ? { pronostico: extra.pronostico } : {}),
 });
 
 /** Deterministic fallback, also used for level 0 and whenever the model fails. Only states input facts. */
@@ -42,9 +52,9 @@ export function inventedFacts(output: string, input: unknown): string[] {
 
 export type Generated = { text: string; model: ModelId | "plantilla"; ms: number; invented: string[]; error?: string };
 
-export async function generate(d: Departamento, level: number, reasons: Reason[], model: ModelId): Promise<Generated> {
+export async function generate(d: Departamento, level: number, reasons: Reason[], model: ModelId, extra?: SummaryExtra): Promise<Generated> {
   const t0 = Date.now();
-  const input = summaryInput(d, level, reasons);
+  const input = summaryInput(d, level, reasons, extra);
   const fallback = (error: string): Generated => ({ text: templateSummary(d, level, reasons), model: "plantilla", ms: Date.now() - t0, invented: [], error });
   const key = process.env.OPENROUTER_API_KEY;
   if (!key) return fallback("OPENROUTER_API_KEY no configurada");
@@ -71,9 +81,9 @@ export async function generate(d: Departamento, level: number, reasons: Reason[]
 }
 
 /** Pipeline entry: level 0 never calls a model; invented facts fall back to the template. */
-export async function summarize(d: Departamento, level: number, reasons: Reason[]): Promise<string> {
+export async function summarize(d: Departamento, level: number, reasons: Reason[], extra?: SummaryExtra): Promise<string> {
   if (level === 0) return templateSummary(d, level, reasons);
   const env = process.env.SUMMARY_MODEL;
-  const g = await generate(d, level, reasons, isModel(env) ? env : DEFAULT_MODEL);
+  const g = await generate(d, level, reasons, isModel(env) ? env : DEFAULT_MODEL, extra);
   return g.invented.length ? templateSummary(d, level, reasons) : g.text;
 }

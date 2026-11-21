@@ -1,19 +1,27 @@
 "use client";
 import Image from "next/image";
-import { freezeScenario, stopScenario, type ActiveScenario } from "./useApp";
+import { freezeScenario, stopDemo, stopScenario, type ActiveScenario } from "./useApp";
+import type { DemoConfig } from "@/lib/demo";
+import { conditionLabel } from "@/lib/demo";
 import { DEMO, SCENARIOS } from "@/lib/scenarios";
 import { timeMza } from "@/lib/copy";
 
 const STAR = "M12 2l3 7h7l-5.5 4.5 2 7.5-6.5-4.5-6.5 4.5 2-7.5L2 9h7z";
 
 export function Stars({ level, size = 22, on = "#FFC94B", off = "#7C6A99", stroke }: { level: number; size?: number; on?: string; off?: string; stroke?: string }) {
+  // Level 5 = police siren: filled stars alternate red/blue and blink like emergency lights (light only, no sound).
+  const siren = level >= 5;
   return (
-    <div role="img" aria-label={`Nivel ${level} de 5`} className="flex gap-1">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <svg key={i} aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill={i <= level ? on : "none"} stroke={i <= level ? stroke ?? "none" : off} strokeWidth="1.5">
-          <path d={STAR} />
-        </svg>
-      ))}
+    <div role="img" aria-label={siren ? "Nivel 5 de 5 · sirena de alerta" : `Nivel ${level} de 5`} className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((i) => {
+        const filled = i <= level;
+        const cls = siren && filled ? (i % 2 === 1 ? "siren-red" : "siren-blue") : undefined;
+        return (
+          <svg key={i} aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill={filled ? on : "none"} stroke={filled ? stroke ?? "none" : off} strokeWidth="1.5" className={cls}>
+            <path d={STAR} />
+          </svg>
+        );
+      })}
     </div>
   );
 }
@@ -27,8 +35,19 @@ export function Disclaimer({ children }: { children?: React.ReactNode }) {
   return <p className="text-xs text-muted">{children}{children ? " · " : ""}No reemplaza las alertas oficiales · Emergencias: 911</p>;
 }
 
-/** Always visible during a replay or simulation, so it is never mistaken for a live alert. */
-export function ScenarioBar({ scenario }: { scenario: ActiveScenario | null }) {
+/** Always visible during a replay, simulation, or demo, so it is never mistaken for a live alert. */
+export function ScenarioBar({ scenario, demo }: { scenario: ActiveScenario | null; demo?: DemoConfig | null }) {
+  if (demo) {
+    const day = demo.days[0];
+    return (
+      <div className="sticky top-0 z-[1000] bg-teal px-4 py-1.5 text-night">
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-display text-sm tracking-widest">DEMO · {demo.departamento} · {day.date} · {conditionLabel(day.condition)} · DATOS FICTICIOS</span>
+          <button onClick={stopDemo} className="min-h-11 rounded-full border-2 border-night px-3 text-xs font-bold">Salir</button>
+        </div>
+      </div>
+    );
+  }
   if (!scenario) return null;
   const s = SCENARIOS[scenario.id];
   return (
@@ -94,8 +113,9 @@ export function SpeechBubble({ children }: { children: React.ReactNode }) {
 
 /** GTA-style wanted level: the stars are the alert level (0–5). Pulses from level 4. */
 export function Wanted({ level }: { level: number }) {
+  const siren = level >= 5;
   return (
-    <div className={`flex shrink-0 items-center rounded-[10px] border-[3px] border-black bg-night/90 px-2 py-2.5 shadow-[3px_3px_0_#000] ${level >= 4 ? "animate-pulse" : ""}`}>
+    <div className={`flex shrink-0 items-center rounded-[10px] border-[3px] border-black bg-night/90 px-2 py-2.5 shadow-[3px_3px_0_#000] ${siren ? "siren-panel" : level >= 4 ? "animate-pulse" : ""}`}>
       <Stars level={level} size={16} />
     </div>
   );

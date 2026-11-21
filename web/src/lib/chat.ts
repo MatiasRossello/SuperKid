@@ -19,9 +19,10 @@ export function moodOf(level: number, sources: Reason[]): Mood {
 /** Poses available per mood in /public/superkid (calma-1.webp …). */
 export const POSES: Record<Mood, number> = { calma: 3, lluvia: 3, granizo: 3, viento: 2 };
 
-export type Intent = "granizo" | "viento" | "lluvia" | "temperatura" | "manana" | "general";
+export type Intent = "granizo" | "viento" | "lluvia" | "temperatura" | "manana" | "dia" | "general";
 
 const RULES: [Intent, RegExp][] = [
+  ["dia", /\b(lunes|martes|miercoles|jueves|viernes|sabado|domingo)\b/],
   ["granizo", /granizo|granizada|piedra/],
   ["viento", /viento|zonda|rafaga/],
   ["lluvia", /llov|lluev|lluvia|paraguas|mojar|tormenta|rayo|trueno|nube/],
@@ -53,6 +54,15 @@ export function nearestStation(depto: string, snap: Snapshot, ok: (s: Snapshot["
     .filter((s) => s.lat !== undefined && s.lng !== undefined && ok(s))
     .map((s) => ({ s, km: Math.round(km(c, [s.lat!, s.lng!])) }))
     .sort((a, b) => a.km - b.km)[0] ?? null;
+const DAY_NAMES = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
+const mendozaDay = (iso: string) => new Date(Date.parse(iso) - 3 * 3600_000).toISOString().slice(0, 10);
+/** Next occurrence of a weekday (today included) from the snapshot's date. */
+function dateForWeekday(iso: string, name: string): string {
+  const target = DAY_NAMES.indexOf(name);
+  const base = new Date(`${mendozaDay(iso)}T00:00:00Z`);
+  const delta = (target - base.getUTCDay() + 7) % 7;
+  return new Date(base.getTime() + delta * 86_400_000).toISOString().slice(0, 10);
+}
 }
 
 const shorten = (s: string, max = 170) => {
@@ -66,7 +76,7 @@ export function answer(question: string, depto: string, snap: Snapshot): Reply {
   const zone = snap.zones[depto as keyof Snapshot["zones"]];
   const intent = intentOf(question);
   const sim = snap.mode === "sim";
-  const label = (s: string) => (sim ? `Simulación (${s})` : s);
+  const label = (s: string) => (sim ? `Simulación (${s})` : snap.mode === "demo" ? `Demo (${s})` : s);
   const src = (name: string, at: string) => `${label(name)} · ${timeMza(at)}`;
   const reply = (text: string, source: string): Reply => ({ intent, text, source });
 
@@ -141,6 +151,15 @@ export function answer(question: string, depto: string, snap: Snapshot): Reply {
       const f = snap.forecast.find((x) => x.fecha === tomorrow) ?? snap.forecast[1];
       if (!f) return reply("No tengo el pronóstico de los próximos días por ahora.", src("Pronóstico DACC", snap.at));
       return reply(`Mañana: ${shorten(f.texto)} Máxima ${f.maxima}°, mínima ${f.minima}°.`, src("Pronóstico DACC", snap.at));
+    }
+
+    case "dia": {
+      const m = plain(question).match(/\b(lunes|martes|miercoles|jueves|viernes|sabado|domingo)\b/);
+      const date = m ? dateForWeekday(snap.at, m[1]) : null;
+      const f = date ? snap.forecast.find((x) => x.fecha === date) : undefined;
+      if (!f) return reply(`No tengo el pronóstico para ese día en ${depto}.`, src("Pronóstico DACC", snap.at));
+      const name = m ? m[1][0].toUpperCase() + m[1].slice(1) : "Ese día";
+      return reply(`${name} ${f.fecha}: ${shorten(f.texto)} Máxima ${f.maxima}°, mínima ${f.minima}°.`, src("Pronóstico DACC", snap.at));
     }
 
     default:
