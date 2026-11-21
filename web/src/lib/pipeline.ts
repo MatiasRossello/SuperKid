@@ -1,7 +1,8 @@
+import { contingencyFromReasons } from "./contingencies.ts";
 import { db, tryWrite } from "./db.ts";
 import { DEPARTAMENTOS } from "./departamentos.ts";
 import { computeLevels, type LevelInputs } from "./level.ts";
-import { notifyRise } from "./push.ts";
+import { notifyContingency } from "./push.ts";
 import { summarize } from "./summary.ts";
 
 /** inputs → zone_status → notify. Shared by the live poller and the replay. */
@@ -24,8 +25,9 @@ export async function runPipeline(inputs: LevelInputs, opts: { replay?: boolean 
         updated_at: new Date().toISOString(),
       }));
       if (level > (old?.level ?? 0)) {
-        rises.push(`${d} ${old?.level ?? 0}→${level}`);
-        await notifyRise(d, level, summary, opts.replay);
+        const contingency = contingencyFromReasons(reasons);
+        rises.push(contingency ? `${d} ${old?.level ?? 0}→${level} ${contingency.code}` : `${d} ${old?.level ?? 0}→${level}`);
+        if (contingency) await notifyContingency(d, contingency, summary, { replay: opts.replay, level });
       }
     }),
   );

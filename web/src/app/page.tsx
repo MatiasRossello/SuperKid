@@ -35,6 +35,7 @@ export default function Home() {
   const [depto] = useDepto();
   const { snap, error, scenario } = useSnapshot();
   const router = useRouter();
+  const [pushNote, setPushNote] = useState<string | null>(null);
   const [asked, setAsked] = useState<string | null>(null); // null = hasn't asked yet
   const [thinking, setThinking] = useState(false);
   const [text, setText] = useState("");
@@ -46,6 +47,14 @@ export default function Home() {
 
   useEffect(() => { if (depto === null) router.replace("/bienvenida"); }, [depto, router]);
   useEffect(() => () => { clearTimeout(timer.current); pending.current?.abort(); }, []);
+  useEffect(() => {
+    try {
+      const note = sessionStorage.getItem("sk-push-note");
+      if (!note) return;
+      sessionStorage.removeItem("sk-push-note");
+      setPushNote(note);
+    } catch { /* private mode */ }
+  }, []);
   if (!depto) return null;
 
   const zone = snap?.zones[depto];

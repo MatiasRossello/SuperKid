@@ -9,7 +9,13 @@ export async function POST(req: Request) {
   if (typeof endpoint !== "string" || !endpoint.startsWith("https://") || endpoint.length > 1000) return new Response("bad endpoint", { status: 400 });
   if (typeof p256dh !== "string" || typeof auth !== "string" || p256dh.length > 200 || auth.length > 100) return new Response("bad keys", { status: 400 });
   if (!isDepartamento(departamento)) return new Response("bad departamento", { status: 400 });
-  const { error } = await db().from("push_subscriptions").upsert({ endpoint, p256dh, auth, departamento }, { onConflict: "endpoint" });
+  let error: { message: string } | null;
+  try {
+    ({ error } = await db().from("push_subscriptions").upsert({ endpoint, p256dh, auth, departamento }, { onConflict: "endpoint" }));
+  } catch (e) {
+    console.error(`[subscribe] ${(e as Error).message}`);
+    return new Response("alerts store unavailable", { status: 503 });
+  }
   if (error) return new Response(error.message, { status: 500 });
   return Response.json({ ok: true });
 }

@@ -6,20 +6,59 @@ import { Logo } from "@/components/ui";
 import { freezeScenario, useDepto } from "@/components/useApp";
 import { DEPARTAMENTOS, type Departamento } from "@/lib/departamentos";
 
+const PUSH_NOTE = "sk-push-note";
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 const b64ToBytes = (b64: string) => {
   const s = atob((b64 + "=".repeat((4 - (b64.length % 4)) % 4)).replace(/-/g, "+").replace(/_/g, "/"));
   return Uint8Array.from(s, (c) => c.charCodeAt(0));
 };
+
+function explainPush(e: unknown): string {
+  const msg = e instanceof Error ? e.message : "";
+  if (/push service not available/i.test(msg)) return "Tu navegador no pudo conectar con el servicio de notificaciones. En Firefox pasa en ventana privada, sin conexión, o con las notificaciones del sistema apagadas.";
+  if (/denied|not allowed|permission/i.test(msg)) return "Sin permiso de notificaciones: podés activarlas desde los ajustes del navegador.";
+  return "No pudimos registrar las alertas. Probá de nuevo en un rato.";
+}
+
+async function activeRegistration() {
+  const reg = await navigator.serviceWorker.register("/sw.js");
+  await navigator.serviceWorker.ready;
+  if (reg.active) return reg;
+  const worker = reg.installing ?? reg.waiting;
+  if (!worker) return reg;
+  await Promise.race([
+    new Promise<void>((resolve) => {
+      if (worker.state === "activated") return resolve();
+      worker.addEventListener("statechange", () => { if (worker.state === "activated" || worker.state === "redundant") resolve(); });
+    }),
+    sleep(4000),
+  ]);
+  return reg;
+}
 
 async function subscribePush(depto: Departamento): Promise<string | null> {
   if (!("serviceWorker" in navigator) || !("PushManager" in window)) return "Este navegador no soporta notificaciones push.";
   const key = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   if (!key) return "Las alertas push todavía no están configuradas.";
   if ((await Notification.requestPermission()) !== "granted") return "Sin permiso de notificaciones: podés activarlas desde los ajustes del navegador.";
-  const reg = await navigator.serviceWorker.ready;
-  const sub = (await reg.pushManager.getSubscription()) ?? (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(key) }));
-  const r = await fetch("/api/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ subscription: sub.toJSON(), departamento: depto }) });
-  return r.ok ? null : "No pudimos registrar las alertas. Probá de nuevo en un rato.";
+  const reg = await activeRegistration();
+  const applicationServerKey = b64ToBytes(key);
+  let last: unknown;
+  for (let i = 0; i < 3; i++) {
+    try {
+      const sub = (await reg.pushManager.getSubscription()) ?? (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey }));
+      const r = await fetch("/api/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ subscription: sub.toJSON(), departamento: depto }) });
+      if (r.ok) return null;
+      if (r.status === 503) return "Las alertas no se pueden guardar todavía: falta conectar la base de datos.";
+      return "No pudimos guardar las alertas. Probá de nuevo en un rato.";
+    } catch (e) {
+      last = e;
+      if (!/push service not available/i.test(e instanceof Error ? e.message : "") || i === 2) break;
+      await sleep(700 * (i + 1));
+    }
+  }
+  return explainPush(last);
 }
 
 type Geo = "idle" | "locating" | "found" | "failed";
@@ -65,9 +104,9 @@ export default function Bienvenida() {
     setDepto(depto);
     if (withPush) {
       setBusy(true);
-      const err = await subscribePush(depto).catch((e: Error) => e.message);
+      const err = await subscribePush(depto).catch(explainPush);
       setBusy(false);
-      if (err) return setMsg(err + " Igual te mostramos el estado en la app.");
+      if (err) { try { sessionStorage.setItem(PUSH_NOTE, err); } catch { /* private mode */ } }
     }
     router.push("/");
   };
