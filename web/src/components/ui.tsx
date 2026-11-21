@@ -1,7 +1,8 @@
 "use client";
+import Image from "next/image";
 import { freezeScenario, stopScenario, type ActiveScenario } from "./useApp";
 import { DEMO, SCENARIOS } from "@/lib/scenarios";
-import { LEVEL_NAME, timeMza } from "@/lib/copy";
+import { timeMza } from "@/lib/copy";
 
 const STAR = "M12 2l3 7h7l-5.5 4.5 2 7.5-6.5-4.5-6.5 4.5 2-7.5L2 9h7z";
 
@@ -17,12 +18,9 @@ export function Stars({ level, size = 22, on = "#FFC94B", off = "#7C6A99", strok
   );
 }
 
-export function Logo({ size = 34 }: { size?: number }) {
-  return (
-    <div className="font-display leading-none tracking-wide text-cream" style={{ fontSize: size, textShadow: `${Math.round(size / 11)}px ${Math.round(size / 11)}px 0 #FF2E88` }}>
-      SUPER<span className="text-sun">KID</span>
-    </div>
-  );
+/** Logo oficial (public/superkid/logo.webp, 6:5). `size` es el alto en px. */
+export function Logo({ size = 56 }: { size?: number }) {
+  return <Image src="/superkid/logo.webp" alt="SuperKid" width={Math.round(size * 1.2)} height={size} priority className="drop-shadow-[0_3px_0_rgba(0,0,0,.45)]" />;
 }
 
 export function Disclaimer({ children }: { children?: React.ReactNode }) {
@@ -87,7 +85,7 @@ export function ForecastIcon({ name, storm }: { name: string; storm: boolean }) 
 /** Comic speech bubble ("nube de texto") with the tail pointing down at the character. */
 export function SpeechBubble({ children }: { children: React.ReactNode }) {
   return (
-    <div aria-live="polite" className="relative animate-[pop_.25s_ease-out] rounded-[22px] border-[3px] border-night bg-cream px-4 py-3.5 text-night shadow-[4px_4px_0_#FF2E88]">
+    <div aria-live="polite" className="relative animate-[pop_.25s_ease-out] rounded-[22px] border-[3px] border-night bg-cream px-4 py-3.5 text-night shadow-[4px_4px_0_#000]">
       {children}
       <span aria-hidden="true" className="absolute -bottom-[11px] left-[38%] size-5 rotate-45 border-b-[3px] border-r-[3px] border-night bg-cream" />
     </div>
@@ -97,9 +95,8 @@ export function SpeechBubble({ children }: { children: React.ReactNode }) {
 /** GTA-style wanted level: the stars are the alert level (0–5). Pulses from level 4. */
 export function Wanted({ level }: { level: number }) {
   return (
-    <div className="flex flex-col items-end gap-1 rounded-xl border border-line/60 bg-night/70 px-3 py-2 backdrop-blur-sm">
-      <span className="font-display text-[11px] tracking-[2px] text-sun">NIVEL {level}/5 · {LEVEL_NAME[level]?.toUpperCase()}</span>
-      <div className={level >= 4 ? "animate-pulse" : ""}><Stars level={level} size={20} /></div>
+    <div className={`flex shrink-0 items-center rounded-[10px] border-[3px] border-black bg-night/90 px-2 py-2.5 shadow-[3px_3px_0_#000] ${level >= 4 ? "animate-pulse" : ""}`}>
+      <Stars level={level} size={16} />
     </div>
   );
 }

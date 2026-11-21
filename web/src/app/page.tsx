@@ -66,13 +66,17 @@ export default function Home() {
 
       <Backdrop mood={mood} />
 
-      <header className="relative z-10 flex items-start justify-between px-4 pt-[max(env(safe-area-inset-top),14px)]">
-        <div className="flex flex-col gap-1.5">
-          <Logo size={28} />
-          <Link href="/bienvenida" aria-label={`Ubicación: ${depto}. Cambiar`} className="flex min-h-11 w-fit items-center gap-1.5 rounded-full bg-night/70 px-3 text-sm font-semibold backdrop-blur-sm">
-            <Pin />{depto}{snap && <span className="text-xs font-normal text-muted">· {timeMza(snap.at)}</span>}
-          </Link>
-        </div>
+      <header className="relative z-10 flex items-center gap-2 px-3 pt-[max(env(safe-area-inset-top),10px)]">
+        <Logo size={52} />
+        <Link href="/bienvenida" aria-label={`Zona: ${depto}. Tocá para cambiar`}
+          className="flex min-w-0 flex-1 items-stretch overflow-hidden rounded-[10px] border-[3px] border-black bg-night/90 shadow-[3px_3px_0_#000] transition-transform active:translate-x-px active:translate-y-px active:shadow-[2px_2px_0_#000]">
+          <span className="flex w-8 shrink-0 items-center justify-center bg-sun text-black"><span className="animate-pulse"><Pin /></span></span>
+          <span className="flex min-w-0 flex-1 flex-col justify-center gap-0.5 px-2 py-1 leading-none">
+            <span className="font-typewriter text-[9px] tracking-[2px] text-sun">ZONA</span>
+            <span className="truncate font-display text-xl uppercase tracking-wide text-cream [text-shadow:2px_2px_0_#000]">{depto}</span>
+          </span>
+          {snap && <span className="flex shrink-0 items-end border-l-2 border-dashed border-line px-1.5 pb-1 font-typewriter text-[11px] text-teal">{timeMza(snap.at)}</span>}
+        </Link>
         <Wanted level={level} />
       </header>
 
@@ -107,15 +111,20 @@ export default function Home() {
       </section>
 
       <footer className="relative z-10 flex flex-col gap-2.5 bg-gradient-to-t from-night via-night/90 to-transparent px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-4">
-        <form onSubmit={(e) => { e.preventDefault(); ask(text); }} className="relative">
+        <form onSubmit={(e) => { e.preventDefault(); ask(text); }}>
           <label htmlFor="pregunta" className="sr-only">Preguntale a SuperKid sobre el tiempo</label>
-          <input id="pregunta" value={text} onChange={(e) => setText(e.target.value)} maxLength={140} enterKeyHint="send" autoComplete="off"
-            placeholder="Preguntale a SuperKid…" className="h-12 w-full rounded-full border-[1.5px] border-line bg-card pl-4 pr-14 text-base text-cream placeholder:text-muted" />
-          <button type="submit" aria-label="Enviar pregunta" disabled={thinking} className="absolute right-1.5 top-1.5 flex size-9 items-center justify-center rounded-full bg-pink disabled:opacity-60">
-            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFF4E8" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12l16-8-6 16-3-7z" /></svg>
-          </button>
+          <div className="relative flex items-center rounded-[10px] border-[3px] border-black bg-[#120824]/95 shadow-[4px_4px_0_#000] transition-shadow focus-within:shadow-[4px_4px_0_#2EE6D6]">
+            <span aria-hidden="true" className="flex w-11 shrink-0 items-center justify-center text-sun">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-8l-5 4v-4H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" /></svg>
+            </span>
+            <input id="pregunta" value={text} onChange={(e) => setText(e.target.value)} maxLength={140} enterKeyHint="send" autoComplete="off"
+              placeholder="PREGUNTALE A SUPERKID…" className="h-[52px] min-w-0 flex-1 bg-transparent pr-14 font-typewriter text-[15px] tracking-wide text-cream outline-none placeholder:text-muted/70" />
+            <button type="submit" aria-label="Enviar pregunta" disabled={thinking}
+              className="absolute right-1.5 top-1.5 flex size-10 items-center justify-center rounded-md border-2 border-black bg-pink shadow-[2px_2px_0_#000] transition-transform active:translate-x-px active:translate-y-px active:shadow-none disabled:opacity-60">
+              <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFF4E8" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12h15M13 5l7 7-7 7" /></svg>
+            </button>
+          </div>
         </form>
-        <p className="text-center text-[10px] text-muted">Datos oficiales DACC · No reemplaza las alertas oficiales · 911</p>
       </footer>
     </main>
   );

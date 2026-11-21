@@ -73,62 +73,65 @@ export default function Bienvenida() {
   };
 
   const choosing = geo === "failed" || (geo === "idle" && saved !== null);
+  const btn = "h-14 w-full rounded-md border-[3px] border-black font-display text-xl uppercase tracking-wider shadow-[4px_4px_0_#000] active:translate-x-px active:translate-y-px active:shadow-[2px_2px_0_#000] disabled:opacity-60";
 
   return (
-    <main className="relative flex h-dvh flex-col overflow-hidden bg-night">
+    <main className="relative flex h-dvh flex-col overflow-hidden bg-black">
       <Image src="/superkid/entrada.webp" alt="SuperKid parado frente a la entrada del parque, con su paraguas" fill priority sizes="480px" className="object-cover object-top" />
-      <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-night via-night/55 via-45% to-transparent to-70%" />
+      {/* viñeta y grano: pantalla de carga vieja, sin degradados de color */}
+      <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black via-black/60 via-35% to-transparent to-60%" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[.14] mix-blend-overlay" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>\")" }} />
 
-      <header className="relative z-10 flex flex-col items-center gap-1 pt-[max(env(safe-area-inset-top),20px)]">
-        <span className="text-[11px] font-bold tracking-[4px] text-cream drop-shadow">BIENVENIDOS A</span>
-        <Logo size={54} />
+      <header className="relative z-10 flex flex-col items-center gap-1 pt-[max(env(safe-area-inset-top),24px)]">
+        <Logo size={150} />
       </header>
 
       <div className="relative z-10 mt-auto flex flex-col gap-3 px-6 pb-[max(env(safe-area-inset-bottom),20px)]">
-        <p className="text-base font-semibold leading-snug text-cream drop-shadow">Antes de pasar, SuperKid necesita saber dónde estás para avisarte del tiempo en tu zona.</p>
-
-        {geo === "locating" && (
-          <p role="status" className="flex h-14 items-center justify-center gap-2 rounded-full border-2 border-teal bg-night/70 font-display tracking-wider text-teal">
-            <span className="size-2.5 animate-ping rounded-full bg-teal" />BUSCANDO TU UBICACIÓN…
-          </p>
-        )}
-
         {geo === "found" && (
-          <p role="status" className="text-center font-display text-3xl tracking-wide text-sun">ESTÁS EN {depto.toUpperCase()}</p>
+          <div role="status" className="flex flex-col">
+            <span className="font-typewriter text-[11px] tracking-[3px] text-sun">ZONA DETECTADA</span>
+            <span className="font-display text-5xl uppercase leading-none tracking-wide text-cream [text-shadow:3px_3px_0_#000]">{depto}</span>
+          </div>
         )}
+        {geo === "locating" && <p role="status" className="font-typewriter text-sm tracking-[3px] text-cream">UBICANDO<span className="animate-pulse">…</span></p>}
+        {geo === "idle" && saved === null && <p className="font-typewriter text-sm text-cream/90">Necesito saber dónde estás.</p>}
 
         {choosing && (
-          <div className="flex gap-2">
-            <label htmlFor="depto" className="sr-only">Tu departamento</label>
-            <select id="depto" value={depto} onChange={(e) => setLocal(e.target.value as Departamento)} className="h-[52px] min-w-0 flex-1 rounded-[14px] border-[1.5px] border-line bg-card px-3.5 text-base text-cream">
-              <option value="" disabled>Elegí tu departamento</option>
-              {[...DEPARTAMENTOS].sort((a, b) => a.localeCompare(b, "es")).map((d) => <option key={d}>{d}</option>)}
-            </select>
-            <button onClick={locate} aria-label="Usar mi ubicación (GPS)" className="flex size-[52px] shrink-0 items-center justify-center rounded-[14px] border-[1.5px] border-teal bg-card">
-              <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2EE6D6" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg>
-            </button>
+          <div className="border-[3px] border-black bg-black/80 p-3">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <h2 id="zona" className="font-display text-lg uppercase tracking-wide text-cream">Elegí tu zona</h2>
+              <button onClick={locate} className="flex min-h-9 items-center gap-1.5 border-2 border-cream/70 px-2.5 font-typewriter text-[11px] text-cream active:bg-cream/10">
+                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg>
+                USAR GPS
+              </button>
+            </div>
+            <div role="radiogroup" aria-labelledby="zona" className="grid max-h-[30dvh] grid-cols-3 gap-1.5 overflow-y-auto">
+              {[...DEPARTAMENTOS].sort((a, b) => a.localeCompare(b, "es")).map((d) => (
+                <button key={d} role="radio" aria-checked={depto === d} onClick={() => setLocal(d)}
+                  className={`min-h-10 border-2 px-1 font-display text-[12px] uppercase leading-tight tracking-wide ${depto === d ? "border-sun bg-sun text-black" : "border-cream/30 text-cream"}`}>{d}</button>
+              ))}
+            </div>
           </div>
         )}
 
         {geo === "idle" && saved === null && (
-          <button onClick={locate} className="h-14 rounded-full bg-teal font-display text-xl tracking-wider text-night">ACTIVAR UBICACIÓN (GPS)</button>
+          <button onClick={locate} className={`${btn} bg-cream text-black`}>Activar ubicación</button>
         )}
-
         {(geo === "found" || choosing) && (
           <>
-            <button onClick={() => enter(false)} disabled={!depto || busy} className="h-14 rounded-full bg-pink font-display text-xl tracking-wider disabled:opacity-60">ENTRAR</button>
-            <button onClick={() => enter(true)} disabled={!depto || busy} className="min-h-11 text-sm font-semibold text-teal underline underline-offset-4">
+            <button onClick={() => enter(false)} disabled={!depto || busy} className={`${btn} bg-cream text-black`}>Entrar</button>
+            <button onClick={() => enter(true)} disabled={!depto || busy} className="min-h-11 font-typewriter text-xs text-cream/80 underline underline-offset-4">
               {busy ? "Activando…" : "Entrar y avisarme por notificación"}
             </button>
           </>
         )}
 
-        {msg && <p role="status" className="rounded-[14px] bg-card-2/90 px-3.5 py-3 text-sm text-lilac">{msg}</p>}
-        {ios && (
-          <p className="rounded-[14px] bg-card/90 px-3.5 py-3 text-[13px] leading-snug text-[#E3D6EE]">En iPhone: tocá Compartir y después “Agregar a inicio” para recibir las alertas.</p>
-        )}
-        <button onClick={() => { setDepto("Maipú"); freezeScenario(12); router.push("/"); }} className="min-h-11 text-sm font-semibold text-sun underline underline-offset-4">Ver simulación (lluvia, granizo y viento)</button>
-        <p className="text-center text-[11px] text-muted">Datos: DACC Mendoza (radar, estaciones y pronóstico). No reemplaza las alertas oficiales.</p>
+        {msg && <p role="status" className="font-typewriter text-xs text-sun">{msg}</p>}
+        {ios && <p className="font-typewriter text-xs text-cream/80">iPhone: Compartir → “Agregar a inicio” para recibir alertas.</p>}
+        <div className="flex items-center justify-between gap-3">
+          <button onClick={() => { setDepto("Maipú"); freezeScenario(12); router.push("/"); }} className="min-h-11 font-typewriter text-[11px] text-cream/60 underline underline-offset-4">Ver simulación</button>
+          <p className="text-right font-typewriter text-[10px] text-cream/50">DACC Mendoza · No reemplaza las alertas oficiales</p>
+        </div>
       </div>
     </main>
   );
