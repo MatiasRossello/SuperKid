@@ -22,14 +22,16 @@ body { font-family: var(--font-inter), system-ui, sans-serif; -webkit-tap-highli
 :focus-visible { outline: 2px solid #2EE6D6; outline-offset: 2px; }
 .leaflet-container {
   font-family: inherit;
-  background-color: #6F8FA8;
+  /* fuera de Mendoza: tierra más oscura (otras provincias y Chile), no mar, para que el radar y los rayos de afuera no parezcan flotar */
+  background-color: #8E8266;
   /* cuadrícula tenue, como el radar de un juego viejo */
   background-image: linear-gradient(rgba(0,0,0,.09) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.09) 1px, transparent 1px);
   background-size: 48px 48px;
 }
-.leaflet-tooltip.depto-label { background: transparent; border: 0; box-shadow: none; padding: 0; font-family: var(--font-anton), sans-serif; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: #000; text-shadow: 0 0 3px #F6EBCB, 0 0 3px #F6EBCB, 0 0 2px #F6EBCB; white-space: nowrap; }
+.leaflet-tooltip.depto-label { background: transparent !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; font-family: var(--font-anton), sans-serif !important; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: #000 !important; text-shadow: 0 0 3px #F6EBCB, 0 0 3px #F6EBCB, 0 0 2px #F6EBCB; white-space: nowrap; }
+.zoom-low .leaflet-tooltip.depto-label { display: none; }
 .leaflet-tooltip.depto-label::before { display: none; }
-.leaflet-tooltip.depto-label-me { font-size: 13px; }
+.leaflet-tooltip.depto-label-me { font-size: 13px !important; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
 /* ── Escena del personaje ─────────────────────────────── */

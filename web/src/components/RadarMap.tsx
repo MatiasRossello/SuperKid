@@ -1,8 +1,8 @@
 "use client";
 import "leaflet/dist/leaflet.css";
 import { geoJSON, type PathOptions } from "leaflet";
-import { useEffect } from "react";
-import { Circle, CircleMarker, GeoJSON, ImageOverlay, MapContainer, useMap } from "react-leaflet";
+import { useEffect, useMemo, type ReactNode } from "react";
+import { Circle, CircleMarker, GeoJSON, ImageOverlay, MapContainer, useMap, useMapEvents } from "react-leaflet";
 import geo from "@/data/departamentos.json";
 import { frameUrl, RADAR_BOUNDS, type FrameRef } from "@/lib/radar";
 
@@ -12,9 +12,37 @@ type Geo = { features: { properties: { departamento: string } }[] };
 function FitDepto({ depto }: { depto: string }) {
   const map = useMap();
   useEffect(() => {
+    // Al volver a /mapa desde otra pantalla, React puede correr este efecto sobre un mapa que ya se destruyó
+    // (sin _mapPane) y Leaflet tira "Cannot read properties of undefined (reading '_leaflet_pos')".
+    if (!(map as unknown as { _mapPane?: unknown })._mapPane) return;
     const f = (geo as unknown as Geo).features.find((x) => x.properties.departamento === depto);
-    if (f) map.fitBounds(geoJSON(f as unknown as Parameters<typeof geoJSON>[0]).getBounds(), { padding: [40, 40], maxZoom: 10 });
+    if (f) map.fitBounds(geoJSON(f as unknown as Parameters<typeof geoJSON>[0]).getBounds(), { padding: [40, 40], maxZoom: 10, animate: false });
   }, [map, depto]);
+  return null;
+}
+
+/**
+ * Capas propias por encima de los departamentos (opacos): el radar y, más arriba, granizo y rayos.
+ * Se crean una sola vez por mapa y se reutilizan. No uso <Pane> de react-leaflet: al volver a /mapa
+ * borraba el panel y el mapa se rompía ("Cannot read properties of undefined (reading 'appendChild')").
+ */
+function Panes({ children }: { children: ReactNode }) {
+  const map = useMap();
+  useMemo(() => {
+    for (const [name, z] of [["radar", 450], ["marcas", 460]] as const) {
+      const pane = map.getPane(name) ?? map.createPane(name);
+      pane.style.zIndex = String(z);
+    }
+  }, [map]);
+  return <>{children}</>;
+}
+
+/** Con el mapa muy alejado los nombres se amontonan: solo se muestran de zoom 8 en adelante. */
+function LabelsByZoom() {
+  const map = useMap();
+  const sync = () => { map.getContainer().classList.toggle("zoom-low", map.getZoom() < 8); };
+  useEffect(() => { sync(); }, [map]); // eslint-disable-line react-hooks/exhaustive-deps
+  useMapEvents({ zoomend: sync });
   return null;
 }
 
@@ -46,17 +74,21 @@ export default function RadarMap({ frame, layers, depto, levels, rayos, cells = 
     if (d) layer.bindTooltip(d, { permanent: true, direction: "center", className: d === depto ? "depto-label depto-label-me" : "depto-label" });
   };
   return (
-    <MapContainer center={[-34.3, -68.5]} zoom={7} minZoom={6} maxZoom={11} zoomControl={false} attributionControl className="absolute inset-0 h-full w-full" style={{ background: "#6F8FA8" }}>
+    <MapContainer center={[-34.3, -68.5]} zoom={7} minZoom={6} maxZoom={11} zoomControl={false} attributionControl className="absolute inset-0 h-full w-full" style={{ background: "#8E8266" }}>
+      <LabelsByZoom />
       {depto && <FitDepto depto={depto} />}
       {/* ponytail: sin mapa base (los tiles oscuros gratis pasaron a pagos); los departamentos pintados alcanzan de contexto */}
       <GeoJSON key={depto + JSON.stringify(levels)} data={geo as Parameters<typeof GeoJSON>[0]["data"]} style={style} onEachFeature={label} />
-      {frame && layers.dbz && <ImageOverlay url={frameUrl(frame, "dbz")} bounds={RADAR_BOUNDS} opacity={0.75} attribution="Radar: DACC Mendoza" />}
-      {frame && layers.granizo && <ImageOverlay url={frameUrl(frame, "granizo")} bounds={RADAR_BOUNDS} opacity={0.95} />}
+      {/* Capas propias, siempre por encima de los departamentos (que ahora son opacos): primero el radar, después granizo y rayos. */}
+      <Panes>
+        {frame && layers.dbz && <ImageOverlay pane="radar" url={frameUrl(frame, "dbz")} bounds={RADAR_BOUNDS} opacity={0.8} attribution="Radar: DACC Mendoza" />}
+        {frame && layers.granizo && <ImageOverlay pane="radar" url={frameUrl(frame, "granizo")} bounds={RADAR_BOUNDS} opacity={0.95} />}
       {layers.granizo && cells.map((c, i) => (
         // radius from the impact area, as if it were a circle
-        <Circle key={`c${i}`} center={[c.lat, c.lng]} radius={Math.sqrt(c.area_km2 / Math.PI) * 1000} pathOptions={{ color: "#000", fillColor: "#FF0000", fillOpacity: 0.5 + c.prob / 400, weight: 3 }} />
+        <Circle key={`c${i}`} pane="marcas" center={[c.lat, c.lng]} radius={Math.sqrt(c.area_km2 / Math.PI) * 1000} pathOptions={{ color: "#000", fillColor: "#FF0000", fillOpacity: 0.5 + c.prob / 400, weight: 3 }} />
       ))}
-      {layers.rayos && rayos.map((r, i) => <CircleMarker key={i} center={[r.lat, r.lng]} radius={4} pathOptions={{ color: "#000", fillColor: "#FFC94B", fillOpacity: 1, weight: 2 }} />)}
+      {layers.rayos && rayos.map((r, i) => <CircleMarker key={i} pane="marcas" center={[r.lat, r.lng]} radius={4} pathOptions={{ color: "#000", fillColor: "#FFC94B", fillOpacity: 1, weight: 2 }} />)}
+      </Panes>
     </MapContainer>
   );
 }

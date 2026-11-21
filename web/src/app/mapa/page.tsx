@@ -9,7 +9,7 @@ import { answer } from "@/lib/chat";
 import { headline, timeMza, topReason } from "@/lib/copy";
 import { frameLocal } from "@/lib/radar";
 
-const RadarMap = dynamic(() => import("@/components/RadarMap"), { ssr: false, loading: () => <div className="absolute inset-0 bg-[#6F8FA8]" /> });
+const RadarMap = dynamic(() => import("@/components/RadarMap"), { ssr: false, loading: () => <div className="absolute inset-0 bg-[#8E8266]" /> });
 
 const PILLS: [keyof Layers, string][] = [["dbz", "Radar"], ["granizo", "Granizo"], ["rayos", "Rayos"]];
 
@@ -23,6 +23,14 @@ export default function Mapa() {
   const [layers, setLayers] = useState<Layers>({ dbz: true, granizo: true, rayos: true });
   const [idx, setIdx] = useState<number | null>(null); // null = follow the latest frame
   const [playing, setPlaying] = useState(false);
+  // Next (cacheComponents) conserva la pantalla anterior oculta y, al volver, "reconecta" sus efectos.
+  // Leaflet no sobrevive a eso (el mapa ya se destruyó y las capas se agregan a la nada: "appendChild of undefined"),
+  // así que el mapa se monta de cero cada vez que la pantalla se muestra y se desmonta cuando se oculta.
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    setShown(true); // eslint-disable-line react-hooks/set-state-in-effect
+    return () => setShown(false);
+  }, []);
   const frames = snap?.frames ?? [];
   const current = idx ?? frames.length - 1;
 
@@ -39,8 +47,8 @@ export default function Mapa() {
   const reply = depto && snap ? answer("", depto, snap) : null; // mismo texto que SuperKid: solo datos, sin consejos
 
   return (
-    <main className="relative h-dvh overflow-hidden bg-[#6F8FA8]">
-      <RadarMap frame={frame} layers={layers} depto={depto ?? ""} levels={levels} rayos={snap?.rayos ?? []} cells={snap?.cells ?? []} />
+    <main className="relative h-dvh overflow-hidden bg-[#8E8266]">
+      {shown && <RadarMap frame={frame} layers={layers} depto={depto ?? ""} levels={levels} rayos={snap?.rayos ?? []} cells={snap?.cells ?? []} />}
 
       <div className="absolute inset-x-0 top-0 z-[1000]">
         <ScenarioBar scenario={scenario} demo={demo} />
