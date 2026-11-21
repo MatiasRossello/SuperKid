@@ -1,6 +1,7 @@
 // What SuperKid says when asked. Facts only: no advice, and no mention of the SMN by name.
 // (official data), never from a model. If the snapshot has no data for the question, it says so.
 import { isZonda, timeMza, topReason } from "./copy.ts";
+import { CENTROS, type Departamento } from "./departamentos.ts";
 import type { Reason } from "./level.ts";
 import type { Snapshot } from "./status.ts";
 
@@ -23,13 +24,10 @@ export type Intent = "granizo" | "viento" | "lluvia" | "temperatura" | "manana" 
 const RULES: [Intent, RegExp][] = [
   ["granizo", /granizo|granizada|piedra/],
   ["viento", /viento|zonda|rafaga/],
-  ["lluvia", /llov|lluvia|paraguas|mojar|tormenta|rayo|trueno|nube/],
+  ["lluvia", /llov|lluev|lluvia|paraguas|mojar|tormenta|rayo|trueno|nube/],
   ["temperatura", /temperatura|calor|frio|grados|fresco|helada/],
   ["manana", /manana|semana|proxim|pasado|despues/],
 ];
-
-/** Gran Mendoza departamentos that do have DACC stations, for the ones that don't. */
-const NEARBY = ["Maipú", "Luján de Cuyo"];
 
 const plain = (s: string) => s.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "");
 
@@ -39,6 +37,23 @@ export function intentOf(question: string): Intent {
 }
 
 export type Reply = { intent: Intent; text: string; source: string };
+
+const km = (a: [number, number], b: [number, number]) => {
+  const rad = Math.PI / 180, dLat = (b[0] - a[0]) * rad, dLng = (b[1] - a[1]) * rad;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a[0] * rad) * Math.cos(b[0] * rad) * Math.sin(dLng / 2) ** 2;
+  return 12742 * Math.asin(Math.sqrt(h));
+};
+const deg = (t: number) => `${String(t).replace(".", ",")} °C`;
+
+/** Closest station to the city centre that passes `ok`, with its distance in km. */
+export function nearestStation(depto: string, snap: Snapshot, ok: (s: Snapshot["stations"][number]) => boolean) {
+  const c = CENTROS[depto as Departamento];
+  if (!c) return null;
+  return snap.stations
+    .filter((s) => s.lat !== undefined && s.lng !== undefined && ok(s))
+    .map((s) => ({ s, km: Math.round(km(c, [s.lat!, s.lng!])) }))
+    .sort((a, b) => a.km - b.km)[0] ?? null;
+}
 
 const shorten = (s: string, max = 170) => {
   const one = s.replace(/\s+/g, " ").trim();
@@ -64,8 +79,12 @@ export function answer(question: string, depto: string, snap: Snapshot): Reply {
     return [`${clean(s[0].fuente)} ${timeMza(s[0].at)}`, ...rest.map(clean)].join(" · ");
   };
   const top = topReason(zone.sources);
+  const stationsIn = snap.stations.filter((s) => s.departamento === depto);
   const general = () => {
-    if (!top || zone.level === 0) return reply(`Sin alertas para ${depto} por ahora.`, src("Radar y estaciones DACC", zone.updated_at));
+    if (!top || zone.level === 0) {
+      const t = stationsIn.find((x) => x.temp !== null) ?? nearestStation(depto, snap, (x) => x.temp !== null)?.s;
+      return reply(`Sin alertas para ${depto}.${t ? ` Hace ${deg(t.temp!)}.` : ""}`, src("Radar y estaciones DACC", t?.read_at ?? zone.updated_at));
+    }
     const d = top.dato;
     const text = d.fenomeno === "granizo" ? `El radar marca granizo cerca de ${d.paraje} (${depto}), con ${d.probabilidad} % de probabilidad.`
       : isZonda(top) ? `Hay alerta ${d.alerta} por ${d.evento} en ${depto}.`
@@ -99,20 +118,18 @@ export function answer(question: string, depto: string, snap: Snapshot): Reply {
       const storm = zone.sources.find((r) => r.dato.pronostico !== undefined);
       if (storm) return reply(`El pronóstico de la DACC anuncia tormentas para ${depto}. Todavía no hay lluvia medida.`, sourcesOf([storm]));
       if (stations.length) return reply(`Ninguna estación de ${depto} registra lluvia ahora.`, src("Estaciones DACC", stations[0].read_at));
-      // no DACC station in Capital, Godoy Cruz, Guaymallén or Las Heras: use the closest ones in Gran Mendoza
-      const near = snap.stations.filter((s) => NEARBY.includes(s.departamento ?? ""));
-      if (near.length) {
-        const wet = near.filter((s) => s.precipitacion).sort((a, b) => b.precipitacion! - a.precipitacion!)[0];
-        return wet
-          ? reply(`En ${depto} no hay estación; la más cercana con lluvia, ${wet.nombre}, midió ${wet.precipitacion} mm.`, src("Estación DACC", wet.read_at))
-          : reply(`En ${depto} no hay estación, y las cercanas de Maipú y Luján no registran lluvia ahora.`, src("Estaciones DACC", near[0].read_at));
-      }
+      const near = nearestStation(depto, snap, (s) => s.precipitacion !== null);
+      if (near) return near.s.precipitacion
+        ? reply(`La estación más cercana a ${depto}, ${near.s.nombre} (a ${near.km} km), midió ${near.s.precipitacion} mm.`, src("Estación DACC", near.s.read_at))
+        : reply(`No está lloviendo cerca de ${depto}: la estación ${near.s.nombre} (a ${near.km} km) marca 0 mm.`, src("Estación DACC", near.s.read_at));
       return reply(`No tengo datos de lluvia para ${depto} por ahora.`, src("Estaciones DACC", snap.at));
     }
 
     case "temperatura": {
       const s = stations.find((x) => x.temp !== null);
-      if (s) return reply(`La estación ${s.nombre} marca ${s.temp} °C.`, src("Estación DACC", s.read_at));
+      if (s) return reply(`La estación ${s.nombre} marca ${deg(s.temp!)}.`, src("Estación DACC", s.read_at));
+      const near = nearestStation(depto, snap, (x) => x.temp !== null);
+      if (near) return reply(`Cerca de ${depto} hace ${deg(near.s.temp!)}. Lo mide la estación ${near.s.nombre}, a ${near.km} km.`, src("Estación DACC", near.s.read_at));
       const today = new Date(Date.parse(snap.at) - 3 * 3600_000).toISOString().slice(0, 10);
       const f = snap.forecast.find((x) => x.fecha === today);
       if (f) return reply(`Hoy el pronóstico marca máxima de ${f.maxima}° y mínima de ${f.minima}°.`, src("Pronóstico DACC", snap.at));
@@ -129,4 +146,27 @@ export function answer(question: string, depto: string, snap: Snapshot): Reply {
     default:
       return general();
   }
+}
+
+/** Everything official we know for this departamento, as the model sees it. Nothing else reaches the model. */
+export function chatFacts(depto: string, snap: Snapshot) {
+  const zone = snap.zones[depto as keyof Snapshot["zones"]];
+  const local = (iso: string) => timeMza(iso);
+  const inDepto = snap.stations.filter((s) => s.departamento === depto);
+  const near = inDepto.length ? null : nearestStation(depto, snap, (s) => s.temp !== null || s.precipitacion !== null);
+  const today = new Date(Date.parse(snap.at) - 3 * 3600_000).toISOString().slice(0, 10);
+  return {
+    departamento: depto,
+    hora_actual: local(snap.at),
+    ...(snap.mode === "sim" || snap.mode === "replay" ? { aviso: "Esto es una simulación, no el tiempo real." } : {}),
+    nivel_alerta: `${zone.level} de 5`,
+    alertas: zone.sources.map((r) => ({ fuente: r.fuente.replace(/SMN/g, "Alerta oficial"), hora: local(r.at), ...r.dato })),
+    estaciones: (inDepto.length ? inDepto : near ? [near.s] : []).map((s) => ({
+      nombre: s.nombre,
+      ...(near ? { distancia_km: near.km, nota: `No hay estación en ${depto}; es la más cercana.` } : {}),
+      temperatura_c: s.temp, lluvia_mm: s.precipitacion, hora: local(s.read_at),
+    })),
+    rayos_ultimos_5_min: snap.rayos.filter((r) => r.departamento === depto).length,
+    pronostico: snap.forecast.slice(0, 3).map((f) => ({ dia: f.fecha === today ? "hoy" : f.fecha, texto: f.texto, maxima_c: f.maxima, minima_c: f.minima })),
+  };
 }

@@ -16,7 +16,7 @@ export type Snapshot = {
   frames: FrameRef[]; // last ~30 min, oldest first
   zones: Record<Departamento, Zone>;
   forecast: src.Forecast[];
-  stations: Pick<src.Station, "nombre" | "departamento" | "temp" | "precipitacion" | "read_at">[];
+  stations: (Pick<src.Station, "nombre" | "departamento" | "temp" | "precipitacion" | "read_at"> & { lat?: number; lng?: number })[];
   rayos: { lat: number; lng: number; departamento: Departamento | null }[]; // last 5 min, inside radar bounds
   cells?: { lat: number; lng: number; prob: number; area_km2: number }[]; // simulation only: no radar PNG
 };
@@ -73,7 +73,7 @@ async function live(): Promise<Snapshot> {
     frames: (frames ?? []).filter((f) => f.types.includes("dbz")).slice(-15).map(({ date, time }) => ({ date, time })),
     zones: zonesFrom(levels, at),
     forecast: forecast ?? [],
-    stations: (stations ?? []).map(({ nombre, departamento, temp, precipitacion, read_at }) => ({ nombre, departamento, temp, precipitacion, read_at })),
+    stations: (stations ?? []).map(({ nombre, departamento, temp, precipitacion, read_at, lat, lng }) => ({ nombre, departamento, temp, precipitacion, read_at, lat, lng })),
     rayos,
   };
 }

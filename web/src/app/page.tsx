@@ -38,10 +38,12 @@ export default function Home() {
   const [thinking, setThinking] = useState(false);
   const [text, setText] = useState("");
   const [turns, setTurns] = useState(0); // each question rotates the pose
+  const [said, setSaid] = useState<{ q: string; text: string } | null>(null); // model's answer to `asked`
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const pending = useRef<AbortController>(undefined);
 
   useEffect(() => { if (depto === null) router.replace("/bienvenida"); }, [depto, router]);
-  useEffect(() => () => clearTimeout(timer.current), []);
+  useEffect(() => () => { clearTimeout(timer.current); pending.current?.abort(); }, []);
   if (!depto) return null;
 
   const zone = snap?.zones[depto];
@@ -50,14 +52,25 @@ export default function Home() {
   const alarming = level >= 3;
   const showing = !thinking && (asked !== null || alarming || scenario?.frozen !== undefined); // a demo preset reacts right away
   const mood: Mood = showing && zone ? moodOf(level, zone.sources) : "calma";
-  const reply = showing && snap ? answer(asked ?? "", depto, snap) : null;
+  const local = showing && snap ? answer(asked ?? "", depto, snap) : null;
+  // The model's text replaces the rule-based one; both stand on the same official data.
+  const reply = local && said && said.q === asked ? { ...local, text: said.text } : local;
   const pose = (turns % POSES[mood]) + 1;
 
   const ask = (q: string) => {
     const t = q.trim() || "¿Cómo está el tiempo?";
-    setText(""); setAsked(t); setTurns((n) => n + 1); setThinking(true);
+    setText(""); setAsked(t); setSaid(null); setTurns((n) => n + 1); setThinking(true);
     clearTimeout(timer.current);
-    timer.current = setTimeout(() => setThinking(false), 1100);
+    pending.current?.abort();
+    const ctl = (pending.current = new AbortController());
+    const minWait = new Promise((r) => setTimeout(r, 700)); // the dots always show for a beat
+    const sc = scenario?.at ? { scenario: scenario.id, at: scenario.at } : {};
+    const call = fetch("/api/chat", { method: "POST", signal: ctl.signal, headers: { "content-type": "application/json" }, body: JSON.stringify({ pregunta: t, departamento: depto, ...sc }) })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: { text?: string } | null) => { if (j?.text) setSaid({ q: t, text: j.text }); })
+      .catch(() => {}); // offline or aborted → the rule-based reply stays
+    timer.current = setTimeout(() => ctl.abort(), 15_000);
+    Promise.all([call, minWait]).then(() => { if (pending.current === ctl) { clearTimeout(timer.current); setThinking(false); } });
   };
 
   return (

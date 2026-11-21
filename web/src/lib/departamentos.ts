@@ -41,3 +41,14 @@ export function stormDeptosFromForecast(text: string): Set<Departamento> {
   }
   return out;
 }
+
+/** City centres of Gran Mendoza. Capital, Godoy Cruz, Guaymallén and Las Heras have no DACC station,
+ *  so the closest one stands in. (The radar right above the city is useless: nightly ground clutter.) */
+export const CENTROS: Partial<Record<Departamento, [number, number]>> = {
+  "Capital": [-32.8895, -68.8458],
+  "Godoy Cruz": [-32.9253, -68.8442],
+  "Guaymallén": [-32.8975, -68.7856],
+  "Las Heras": [-32.8503, -68.8283],
+  "Maipú": [-32.9833, -68.7833],
+  "Luján de Cuyo": [-33.0369, -68.8786],
+};
