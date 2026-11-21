@@ -47,3 +47,17 @@ test("invented facts detector", async () => {
   assert.deepEqual(inventedFacts("Granizo cerca de Comandante Salas a las 18:16, 95 % de probabilidad. Guardá el auto.", input), []);
   assert.deepEqual(inventedFacts("Granizo en 15 minutos, hasta las 19:30.", input), ["15", "19:30"]);
 });
+
+test("simulación Maipú: lluvia → granizo → zonda", async () => {
+  const { STEPS, simMaipuSnapshot } = await import("./sim-maipu.ts");
+  const { SCENARIOS } = await import("./scenarios.ts");
+  const { headline } = await import("./copy.ts");
+  const start = Date.parse(SCENARIOS.maipu.start);
+  const at = (m: number) => new Date(start + m * 60_000 + 30_000).toISOString();
+  const levels = STEPS.map((s) => simMaipuSnapshot(at(s.min)).zones["Maipú"].level);
+  assert.deepEqual(levels, [1, 2, 2, 3, 4, 5, 2, 0, 2, 3, 2]);
+  const z = simMaipuSnapshot(at(54)).zones["Maipú"];
+  assert.equal(headline(z.level, z.sources, "Maipú"), "ZONDA EN MAIPÚ");
+  assert.equal(simMaipuSnapshot(at(26)).zones["Capital"].level, 1); // forecast covers all Gran Mendoza
+  assert.equal(simMaipuSnapshot(at(26)).zones["San Rafael"].level, 0);
+});

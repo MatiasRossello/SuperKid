@@ -19,7 +19,3 @@ export const frameLocal = (f: FrameRef) => {
   return `${String(h).padStart(2, "0")}:${f.time.slice(2, 4)}`;
 };
 
-/** Replay of the 18–19/11 storm (Santa Rosa hail). Virtual clock runs at 10x from here. */
-export const REPLAY_START = "2026-11-19T19:00:00Z";
-export const REPLAY_END = "2026-11-19T23:58:00Z";
-export const REPLAY_SPEED = 10;

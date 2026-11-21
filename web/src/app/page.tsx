@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Disclaimer, ForecastIcon, Logo, Pin, ReplayBar, Stars, Sunset } from "@/components/ui";
+import { Disclaimer, ForecastIcon, Logo, Pin, ScenarioBar, Stars, Sunset } from "@/components/ui";
 import { useDepto, useSnapshot } from "@/components/useApp";
 import { headline, timeMza, topReason } from "@/lib/copy";
 import { frameLocal } from "@/lib/radar";
@@ -11,7 +11,8 @@ const DAYS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
 export default function Home() {
   const [depto] = useDepto();
-  const { snap, error, replayAt } = useSnapshot();
+  const { snap, error, scenario } = useSnapshot();
+  const isReplay = scenario?.id === "replay";
   const router = useRouter();
   useEffect(() => { if (depto === null) router.replace("/bienvenida"); }, [depto, router]);
   if (!depto) return null;
@@ -26,7 +27,7 @@ export default function Home() {
 
   return (
     <main className="pb-10">
-      <ReplayBar at={replayAt} />
+      <ScenarioBar scenario={scenario} />
       <Sunset>
         <div className="absolute inset-x-6 top-14 flex items-center justify-between">
           <Logo />
@@ -71,7 +72,7 @@ export default function Home() {
             <circle cx="75" cy="75" r="6" fill="#FFF4E8" stroke="#170A2B" strokeWidth="2" />
           </svg>
           <span className="absolute inset-x-0 bottom-3.5 text-center font-display text-xs tracking-[2px] text-teal">
-            {replayAt ? "RADAR REPLAY" : "RADAR EN VIVO"}
+            {scenario ? (isReplay ? "RADAR REPLAY" : "SIMULACIÓN") : "RADAR EN VIVO"}
             {lastFrame && <span className="block text-[11px] text-cream">{frameLocal(lastFrame)}</span>}
           </span>
         </Link>
@@ -79,12 +80,12 @@ export default function Home() {
           <div className="flex flex-col gap-0.5 rounded-[14px] bg-card px-3.5 py-3">
             <span className="text-xs text-muted">{wettest ? `Estación ${wettest.nombre}` : "Estaciones DACC"}</span>
             <span className="text-lg font-bold">{wettest?.precipitacion != null ? `${wettest.precipitacion} mm` : "Sin dato"}</span>
-            <span className="text-xs text-muted">{wettest ? `precipitación · ${timeMza(wettest.read_at)}` : replayAt ? "no guardadas en el replay" : "sin estación en el depto"}</span>
+            <span className="text-xs text-muted">{wettest ? `precipitación · ${timeMza(wettest.read_at)}` : isReplay ? "no guardadas en el replay" : "sin estación en el depto"}</span>
           </div>
           <div className="flex flex-col gap-0.5 rounded-[14px] bg-card px-3.5 py-3">
             <span className="text-xs text-muted">Rayos en {depto}</span>
-            <span className="text-lg font-bold">{replayAt ? "Sin dato" : rayos}</span>
-            <span className="text-xs text-muted">últimos 5 min · GOES/GLM</span>
+            <span className="text-lg font-bold">{isReplay ? "Sin dato" : rayos}</span>
+            <span className="text-xs text-muted">{scenario && !isReplay ? "últimos 5 min · simulados" : "últimos 5 min · GOES/GLM"}</span>
           </div>
         </div>
       </div>

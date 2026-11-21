@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Layers } from "@/components/RadarMap";
-import { ReplayBar } from "@/components/ui";
+import { ScenarioBar } from "@/components/ui";
 import { useDepto, useSnapshot } from "@/components/useApp";
 import { headline, timeMza, topReason } from "@/lib/copy";
 import { frameLocal } from "@/lib/radar";
@@ -14,7 +14,8 @@ const PILLS: [keyof Layers, string][] = [["dbz", "Radar"], ["granizo", "Granizo"
 
 export default function Mapa() {
   const [depto] = useDepto();
-  const { snap, replayAt } = useSnapshot();
+  const { snap, scenario } = useSnapshot();
+  const replayAt = scenario?.at ?? null;
   const [layers, setLayers] = useState<Layers>({ dbz: true, granizo: true, rayos: true });
   const [idx, setIdx] = useState<number | null>(null); // null = follow the latest frame
   const [playing, setPlaying] = useState(false);
@@ -34,10 +35,10 @@ export default function Mapa() {
 
   return (
     <main className="relative h-dvh overflow-hidden bg-map">
-      <RadarMap frame={frame} layers={layers} depto={depto ?? ""} levels={levels} rayos={snap?.rayos ?? []} />
+      <RadarMap frame={frame} layers={layers} depto={depto ?? ""} levels={levels} rayos={snap?.rayos ?? []} cells={snap?.cells ?? []} />
 
       <div className="absolute inset-x-0 top-0 z-[1000]">
-        <ReplayBar at={replayAt} />
+        <ScenarioBar scenario={scenario} />
         <div className="flex items-center justify-between px-4 pt-3">
           <Link href="/" aria-label="Volver" className="flex size-11 items-center justify-center rounded-full border-[1.5px] border-teal bg-map/85">
             <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2EE6D6" strokeWidth="2.2" strokeLinecap="round"><path d="M15 5l-7 7 7 7" /></svg>
@@ -45,7 +46,7 @@ export default function Mapa() {
           <div className="flex items-center gap-2 rounded-full border-[1.5px] border-pink bg-map/85 px-4 py-2.5">
             <span className={`size-2 rounded-full bg-pink ${idx === null && !replayAt ? "animate-pulse" : ""}`} />
             <span className="font-display text-sm tracking-[1.5px]">
-              {replayAt ? "REPLAY" : idx === null ? "EN VIVO" : "HISTORIAL"} · {frame ? frameLocal(frame) : "--:--"}
+              {scenario ? (scenario.id === "replay" ? "REPLAY" : "SIMULACIÓN") : idx === null ? "EN VIVO" : "HISTORIAL"} · {frame ? frameLocal(frame) : scenario ? timeMza(scenario.at) : "--:--"}
             </span>
           </div>
           <span className="size-11" />
@@ -68,7 +69,7 @@ export default function Mapa() {
       </div>
 
       <div className="absolute inset-x-0 bottom-0 z-[1000] flex flex-col gap-3.5 rounded-t-3xl border-t-2 border-pink bg-night px-5 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-4">
-        <div className="flex items-center gap-3">
+        {frames.length > 0 && <div className="flex items-center gap-3">
           <button onClick={() => { if (!playing && idx === null) setIdx(0); setPlaying((p) => !p); }} disabled={frames.length < 2}
             aria-label={playing ? "Pausar" : "Reproducir los últimos 30 minutos"} className="flex size-11 shrink-0 items-center justify-center rounded-full bg-sun disabled:opacity-50">
             {playing
@@ -85,7 +86,7 @@ export default function Mapa() {
               <span>{frames.at(-1) ? frameLocal(frames.at(-1)!) : ""}</span>
             </div>
           </div>
-        </div>
+        </div>}
         {zone && depto && (
           <Link href={zone.level >= 3 ? "/alerta" : "/"} className="flex flex-col gap-1 rounded-2xl bg-card px-4 py-3.5">
             <div className="flex items-center justify-between gap-2">
@@ -93,7 +94,7 @@ export default function Mapa() {
               {top?.dato.probabilidad !== undefined && <span className="font-display text-lg text-pink">{top.dato.probabilidad} %</span>}
             </div>
             <span className="text-[13px] text-[#E3D6EE]">{zone.summary}</span>
-            <span className="text-xs text-muted">Radar DACC · {top ? timeMza(top.at) : timeMza(zone.updated_at)} · No reemplaza las alertas oficiales</span>
+            <span className="text-xs text-muted">{top ? `${top.fuente} · ${timeMza(top.at)}` : `DACC · ${timeMza(zone.updated_at)}`} · No reemplaza las alertas oficiales</span>
           </Link>
         )}
       </div>

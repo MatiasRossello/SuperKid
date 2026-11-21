@@ -1,13 +1,13 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { Disclaimer, ReplayBar, Stars } from "@/components/ui";
+import { Disclaimer, ScenarioBar, Stars } from "@/components/ui";
 import { useDepto, useSnapshot } from "@/components/useApp";
 import { headline, LEVEL_NAME, mission, timeMza, topReason } from "@/lib/copy";
 
 export default function Alerta() {
   const [depto] = useDepto();
-  const { snap, replayAt } = useSnapshot();
+  const { snap, scenario } = useSnapshot();
   const [done, setDone] = useState<Set<number>>(new Set());
   if (!depto) return null;
   const zone = snap?.zones[depto];
@@ -15,7 +15,7 @@ export default function Alerta() {
 
   return (
     <main className="flex flex-col pb-10">
-      <ReplayBar at={replayAt} />
+      <ScenarioBar scenario={scenario} />
       <div className="px-5 pt-14">
         <Link href="/" className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-teal">
           <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M15 5l-7 7 7 7" /></svg>
@@ -29,7 +29,7 @@ export default function Alerta() {
           {zone ? headline(zone.level, zone.sources, depto) : "CARGANDO…"}
         </h1>
         {top?.dato.paraje && <span className="text-[15px] font-semibold text-night">Cerca de {top.dato.paraje}</span>}
-        <div className="mt-2.5"><Stars level={zone?.level ?? 0} size={28} on="#FFF4E8" off="#170A2B" stroke="#170A2B" /></div>
+        <div className="mt-2.5"><Stars level={zone?.level ?? 0} size={28} on="#170A2B" off="rgba(23,10,43,0.4)" /></div>
       </section>
 
       {zone && (

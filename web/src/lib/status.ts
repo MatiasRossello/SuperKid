@@ -5,17 +5,20 @@ import { departamentoAt } from "./geo.ts";
 import { computeLevels, type Impact, type Reason } from "./level.ts";
 import { inBounds, type FrameRef } from "./radar.ts";
 import * as src from "./sources.ts";
+import type { ScenarioId } from "./scenarios.ts";
+import { simMaipuSnapshot } from "./sim-maipu.ts";
 import { templateSummary } from "./summary.ts";
 
 export type Zone = { level: number; summary: string; sources: Reason[]; updated_at: string };
 export type Snapshot = {
-  mode: "db" | "live" | "replay";
+  mode: "db" | "live" | "replay" | "sim";
   at: string;
   frames: FrameRef[]; // last ~30 min, oldest first
   zones: Record<Departamento, Zone>;
   forecast: src.Forecast[];
   stations: Pick<src.Station, "nombre" | "departamento" | "temp" | "precipitacion" | "read_at">[];
   rayos: { lat: number; lng: number; departamento: Departamento | null }[]; // last 5 min, inside radar bounds
+  cells?: { lat: number; lng: number; prob: number; area_km2: number }[]; // simulation only: no radar PNG
 };
 
 // ponytail: per-instance memory cache; the CDN header on /api/status does the real work
@@ -105,3 +108,5 @@ export function replaySnapshot(at: string): Snapshot {
 }
 
 export const snapshot = () => (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY ? fromDb() : live());
+
+export const scenarioSnapshot = (id: ScenarioId, at: string): Snapshot => (id === "maipu" ? simMaipuSnapshot(at) : replaySnapshot(at));

@@ -1,5 +1,6 @@
 "use client";
-import { stopReplay } from "./useApp";
+import { stopScenario, type ActiveScenario } from "./useApp";
+import { SCENARIOS } from "@/lib/scenarios";
 import { timeMza } from "@/lib/copy";
 
 const STAR = "M12 2l3 7h7l-5.5 4.5 2 7.5-6.5-4.5-6.5 4.5 2-7.5L2 9h7z";
@@ -28,13 +29,14 @@ export function Disclaimer({ children }: { children?: React.ReactNode }) {
   return <p className="text-xs text-muted">{children}{children ? " · " : ""}No reemplaza las alertas oficiales · Emergencias: 911</p>;
 }
 
-/** Always visible during the replay, so stored data is never mistaken for a live alert. */
-export function ReplayBar({ at }: { at: string | null }) {
-  if (!at) return null;
+/** Always visible during a replay or simulation, so it is never mistaken for a live alert. */
+export function ScenarioBar({ scenario }: { scenario: ActiveScenario | null }) {
+  if (!scenario) return null;
+  const s = SCENARIOS[scenario.id];
   return (
     <div className="sticky top-0 z-[1000] flex items-center justify-between gap-2 bg-sun px-4 py-2 text-night">
-      <span className="font-display text-sm tracking-widest">REPLAY 19/11 · {timeMza(at)} · DATOS GUARDADOS</span>
-      <button onClick={stopReplay} className="min-h-11 rounded-full border-2 border-night px-3 text-xs font-bold">Salir</button>
+      <span className="font-display text-sm tracking-widest">{s.label} · {timeMza(scenario.at)} · {s.note}</span>
+      <button onClick={stopScenario} className="min-h-11 rounded-full border-2 border-night px-3 text-xs font-bold">Salir</button>
     </div>
   );
 }
